@@ -178,8 +178,8 @@ function setCtxStyle(ctx, mode) {
         ctx.strokeStyle = "#10b981";
         ctx.shadowColor = "#10b981";
     }
-    ctx.lineWidth = 3;
-    ctx.shadowBlur = 4;
+    ctx.lineWidth = 1;
+    ctx.shadowBlur = 6;
 }
 
 
