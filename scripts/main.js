@@ -43,7 +43,32 @@ const drawModeBtn = document.getElementById('btn-mode-draw');
 const editModeBtn = document.getElementById('btn-mode-edit');
 
 let isEditMode = false; //false = draw, true = edit
-let undoCache = null;
+
+let undoStack = [];
+let redoStack = [];
+const HISTORY_LIMIT = 200;
+
+function snapshot() {
+    undoStack.push(structuredClone(waypoints));
+    if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+    redoStack.length = 0;
+}
+
+function undo() {
+    if (undoStack.length === 0) return;
+    redoStack.push(structuredClone(waypoints));
+    waypoints = undoStack.pop();
+    updatePath();
+    renderSidebarBlocks();
+}
+
+function redo() {
+    if (redoStack.length === 0) return;
+    undoStack.push(structuredClone(waypoints));
+    waypoints = redoStack.pop();
+    updatePath();
+    renderSidebarBlocks();
+}
 
 drawModeBtn.addEventListener("click", () => {
     isEditMode = false;
@@ -189,6 +214,7 @@ function renderSidebarBlocks() {
 
         block.addEventListener('dragend', () => {
             block.classList.remove('dragging');
+            snapshot();
 
             const newWaypoints = [];
             document.querySelectorAll('.path-block').forEach(b => {
@@ -206,6 +232,12 @@ function renderSidebarBlocks() {
 
     // attach listeners
     document.querySelectorAll('.wp-x').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = e.target.getAttribute('data-index');
+            waypoints[idx].x = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
         input.addEventListener('input', (e) => {
             const idx = e.target.getAttribute('data-index');
             waypoints[idx].x = parseFloat(e.target.value) || 0;
@@ -213,6 +245,12 @@ function renderSidebarBlocks() {
         });
     });
     document.querySelectorAll('.wp-y').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = e.target.getAttribute('data-index');
+            waypoints[idx].y = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
         input.addEventListener('input', (e) => {
             const idx = e.target.getAttribute('data-index');
             waypoints[idx].y = parseFloat(e.target.value) || 0;
@@ -220,6 +258,12 @@ function renderSidebarBlocks() {
         });
     });
     document.querySelectorAll('.wp-h').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = e.target.getAttribute('data-index');
+            waypoints[idx].heading = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
         input.addEventListener('input', (e) => {
             const idx = e.target.getAttribute('data-index');
             waypoints[idx].heading = parseFloat(e.target.value) || 0;
@@ -227,6 +271,12 @@ function renderSidebarBlocks() {
         });
     });
     document.querySelectorAll('.wp-delay').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = e.target.getAttribute('data-index');
+            waypoints[idx].ms = parseInt(e.target.value) || 0;
+            updatePath();
+        });
         input.addEventListener('input', (e) => {
             const idx = e.target.getAttribute('data-index');
             waypoints[idx].ms = parseInt(e.target.value) || 0;
@@ -235,6 +285,7 @@ function renderSidebarBlocks() {
     });
     document.querySelectorAll('.wp-interp').forEach(select => {
         select.addEventListener('change', (e) => {
+            snapshot();
             const idx = e.target.getAttribute('data-index');
             waypoints[idx].headingInterp = e.target.value;
             updatePath();
@@ -243,6 +294,7 @@ function renderSidebarBlocks() {
     });
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            snapshot();
             const idx = e.target.getAttribute('data-index');
             waypoints.splice(idx, 1);
             updatePath();
@@ -276,6 +328,7 @@ function getDragAfterElement(container, y) {
 }
 
 document.getElementById('btn-add-delay').addEventListener('click', () => {
+    snapshot();
     waypoints.push({ type: 'delay', ms: 1000 });
     updatePath();
     renderSidebarBlocks();
@@ -310,17 +363,10 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
-        undoCache = waypoints.at(-1);
-        waypoints.pop();
-        renderSidebarBlocks();
-        updatePath();
-    } else if ((e.ctrlKey && e.key === "y") || (e.ctrlKey && e.key === "z" && e.shiftKey)) {
+        undo();
+    } else if ((e.ctrlKey && e.key === "y") || (e.ctrlKey && e.shiftKey && e.key === "Z")) {
         e.preventDefault();
-        if (cache) {
-            waypoints.push(cache);
-            renderSidebarBlocks();
-            updatePath();
-        }
+        redo();
     }
 });
 
@@ -446,6 +492,7 @@ canvas.addEventListener("mousedown", (e) => {
     //check start pose first
     let spPix = toPix(startPose.x, startPose.y);
     if (Math.hypot(clickX - spPix.x, clickY - spPix.y) < wpRad + 15) {
+        snapshot(); //save state before drag
         draggedIdx = -1;
         isDragging = true;
         return;
@@ -455,6 +502,7 @@ canvas.addEventListener("mousedown", (e) => {
     for (let i = 0; i < waypoints.length; i++) {
         let wpPix = toPix(waypoints[i].x, waypoints[i].y);
         if (Math.hypot(clickX - wpPix.x, clickY - wpPix.y) < wpRad + 15) {
+            snapshot(); //save state before drag
             draggedIdx = i;
             isDragging = true;
             return;
@@ -533,6 +581,7 @@ canvas.addEventListener("mouseup", (e) => {
 
     //only add pts if we are in draw mode
     if (!isEditMode) {
+        snapshot();
         const inchPos = toInch(mouse.x, mouse.y);
         let lastHeading = waypoints.length > 0 ? waypoints[waypoints.length - 1].heading : startPose.heading;
 
