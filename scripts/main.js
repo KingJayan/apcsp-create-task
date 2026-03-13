@@ -47,7 +47,7 @@ let isEditMode = false; //false = draw, true = edit
 let undoStack = [];
 let redoStack = [];
 const HISTORY_LIMIT = 200;
-
+    
 function snapshot() {
     undoStack.push(structuredClone(waypoints));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();

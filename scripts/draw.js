@@ -182,7 +182,7 @@ function setCtxStyle(ctx, mode) {
     ctx.shadowBlur = 6;
 }
 
-
+    
 export function draw(ctx, canvas, waypoints, pathArray, wpRad) {
     drawGrid(ctx, canvas);
 

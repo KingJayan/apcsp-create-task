@@ -22,7 +22,7 @@ body {
   flex-direction: column;
 }
 
-/* floating glass for canvas */
+/* floating glass canvas -*/
 canvas {
   background-color: #121214;
   border: solid #27272a;

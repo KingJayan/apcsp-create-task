@@ -84,7 +84,7 @@ export function updRobot(robot, pathArray) {
         sinceLast++;
     }
     let distFromStart = sinceLast + localT;
-
+    
     const RAMP_TICKS = 6; //more means ramp is longer, less means sharper ramp but aggro on corners
 
     //calc speed to choose if we are near to start, middle(1.0), or end of motion
