@@ -3,7 +3,7 @@
 //field & bot dims (in)
 export const FIELD_SIZE = 144; //6 tiles sq
 export const ROBOT_SIZE = 18;
-export const ROBOT_SPEED = 1;
+export const ROBOT_SPEED = 1.2;
 
 //ui & rendering
 export const CANVAS_SIZE = 600; //px
