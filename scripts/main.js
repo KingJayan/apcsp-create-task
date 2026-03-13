@@ -43,6 +43,7 @@ const drawModeBtn = document.getElementById('btn-mode-draw');
 const editModeBtn = document.getElementById('btn-mode-edit');
 
 let isEditMode = false; //false = draw, true = edit
+let undoCache = null;
 
 drawModeBtn.addEventListener("click", () => {
     isEditMode = false;
@@ -309,7 +310,7 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
-        let cache = waypoints.at[-1];
+        undoCache = waypoints.at(-1);
         waypoints.pop();
         renderSidebarBlocks();
         updatePath();
