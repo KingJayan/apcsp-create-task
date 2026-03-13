@@ -297,7 +297,18 @@ document.addEventListener('keydown', (event) => {
 document.addEventListener('keydown', (event) => {
     if (event.key === "e") {
         event.preventDefault();
-        //editing mode
+        isEditMode = true;
+    } else if (event.key === "d") {
+        event.preventDefault();
+        isEditMode = false;
+    }
+});
+
+document.addEventListener('keydown', (e) =>{
+    if (e.key === "control" && e.key === "z") {
+        e.preventDefault();
+        waypoints.pop();
+        updatePath();
     }
 });
 
