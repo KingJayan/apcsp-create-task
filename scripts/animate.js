@@ -85,8 +85,8 @@ export function updRobot(robot, pathArray) {
     }
     let distFromStart = sinceLast + localT;
 
-    const RAMP_TICKS = 0.01; //less means ramp is longer, more means sharper ramp but aggro on corners
-    
+    const RAMP_TICKS = 6; //less means ramp is longer, more means sharper ramp but aggro on corners
+
     //calc speed to choose if we are near to start, middle(1.0), or end of motion
     let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS);
     let speedMult = Math.max(0.2, profileMult); //min speed
@@ -107,7 +107,7 @@ export function updRobot(robot, pathArray) {
     //lerp between the two closest pts
     let p1 = pathArray[index];
     let p2 = pathArray[nextIndex];
-    
+
     robot.pose.x = p1.x + (p2.x - p1.x) * localT;
     robot.pose.y = p1.y + (p2.y - p1.y) * localT;
     robot.pose.heading = lerpAngle(p1.heading, p2.heading, localT);
