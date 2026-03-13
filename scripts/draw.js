@@ -179,7 +179,7 @@ function setCtxStyle(ctx, mode) {
         ctx.shadowColor = "#10b981";
     }
     ctx.lineWidth = 3;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 4;
 }
 
 
