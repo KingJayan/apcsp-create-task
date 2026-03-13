@@ -1,0 +1,423 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #09090b;
+  color: #fafafa;
+  margin-top: 3rem;
+}
+
+/*app layout--- */
+.app-layout {
+  display: flex;
+  gap: 30px;
+  max-width: 1050px;
+  width: 100%;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+}
+
+/* floating glass for canvas */
+canvas {
+  background-color: #121214;
+  border: solid #27272a;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+/*toolbar layout*/
+.toolbar {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  width: 600px;
+  /*match canvas width */
+  justify-content: space-between;
+  animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.group {
+  display: flex;
+  gap: 4px;
+  background-color: #18181b;
+  /*dark inset*/
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid #27272a;
+}
+
+/*override basecoat for active toolbar btn*/
+.btn.active {
+  background-color: #27272a;
+  color: #fafafa;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/*status indicator*/
+.status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 10px;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #27272a;
+  border-radius: 20px;
+}
+
+.pulse-dot {
+  position: relative;
+  z-index: 2;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  box-shadow: 0 0 8px currentColor;
+  transition: background-color 0.3s;
+}
+
+.status.online .pulse-dot {
+  background-color: #10b981;
+}
+
+.p-ind {
+  font-size: 12px;
+  color: #a1a1aa;
+  margin: 0;
+  font-weight: 500;
+}
+
+.pulse-ring {
+  position: absolute;
+  left: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.status.online .pulse-ring {
+  animation: subtle-pulse 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes subtle-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(3.5);
+    opacity: 0;
+  }
+}
+
+
+/* primary action(start) */
+.btn-primary {
+  background-color: #fafafa;
+  color: #09090b;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: #e4e4e7;
+  color: #09090b;
+  box-shadow: 0 0 15px rgba(250, 250, 250, 0.15);
+}
+
+/*destructive action(stop) */
+.btn-destructive {
+  background-color: rgba(220, 38, 38, 0.1);
+  /*red*/
+  color: #ef4444;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.btn-destructive:hover {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+  border-color: rgba(220, 38, 38, 0.3);
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.15);
+  /*soft red*/
+}
+
+
+/*sidebar and block editor--- */
+.sidebar {
+  flex-grow: 1;
+  background-color: #121214;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 380px;
+  height: 675px;
+  overflow-y: auto;
+  /*canvas shadows and anims*/
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 10px 40px -10px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: 0.1s;
+}
+
+/*scrollbar styling for sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 20px;
+}
+
+.sidebar-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sidebar h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar h3 span {
+  color: #a1a1aa;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.mono-text {
+  font-family: monospace;
+  color: #a1a1aa;
+  font-size: 13px;
+  background: #09090b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #27272a;
+}
+
+/*input styling */
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  background-color: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  padding: 6px 10px;
+  flex: 1;
+  transition: border-color 0.2s;
+}
+
+.input-group:focus-within {
+  border-color: #06b6d4;
+}
+
+.input-group label {
+  color: #a1a1aa;
+  font-size: 12px;
+  margin-right: 6px;
+  font-weight: 500;
+}
+
+/*override basecoat input inside container*/
+.input-group .input {
+  background: transparent;
+  border: none;
+  color: #fafafa;
+  width: 100%;
+  font-family: monospace;
+  font-size: 13px;
+  outline: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.input-group .input:focus {
+  box-shadow: none;
+}
+
+/*dyn wp blocks */
+.path-block {
+  background-color: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-left: 3px solid #06b6d4;
+  /*color accent */
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.path-block:hover {
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.path-block-header {
+  font-size: 12px;
+  color: #fafafa;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.btn-icon:hover {
+  color: #ef4444;
+  /* red */
+}
+
+
+/*animations*/
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.path-block,
+.input-group {
+  background: rgba(24, 24, 27, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #27272a;
+  transition: all 0.3s ease;
+}
+
+/*light radius glow on hover*/
+.path-block:hover {
+  background: rgba(39, 39, 42, 0.6);
+  border-color: #3f3f46;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4),
+    /*outer shadow */
+    0 0 15px 0 rgba(255, 255, 255, 0.03);
+  transform: translateY(-2px);
+}
+
+.input-group:hover {
+  border-color: #3f3f46;
+  box-shadow: 0 0 12px 0 rgba(6, 182, 212, 0.08);
+}
+
+.input-group:focus-within {
+  border-color: #06b6d4;
+  background: rgba(24, 24, 27, 0.8);
+  box-shadow: 0 0 15px 0 rgba(6, 182, 212, 0.15),
+    inset 0 0 8px 0 rgba(6, 182, 212, 0.05);
+}
+
+/*custom glass dropdown*/
+.custom-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  border: none;
+  color: #06b6d4;
+  width: 100%;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0px center;
+  background-size: 14px;
+  padding-right: 20px;
+  color-scheme: dark;
+  /*forces native os dark mode popup*/
+}
+
+.custom-select:focus {
+  color: #fafafa;
+}
+
+.custom-select option {
+  background-color: #18181b;
+  color: #fafafa;
+  font-family: monospace;
+  /*matches select font*/
+  padding: 8px;
+}
+
+/* drag and drop & delay blocks */
+.path-block {
+  cursor: grab;
+}
+
+.path-block:active {
+  cursor: grabbing;
+}
+
+.path-block.delay-block {
+  border-left: 3px solid #f59e0b; /* amber */
+}
+
+.path-block.dragging {
+  opacity: 0.4;
+  border: 1px dashed #a1a1aa;
+  background: rgba(24, 24, 27, 0.8);
+  transform: scale(0.98);
+}
