@@ -85,7 +85,7 @@ export function updRobot(robot, pathArray) {
     }
     let distFromStart = sinceLast + localT;
 
-    const RAMP_TICKS = 6;
+    const RAMP_TICKS = 6; //more means ramp is longer, less means sharper ramp but aggro on corners
     //calc speed to choose if we are near to start, middle(1.0), or end of motion
     let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS);
     let speedMult = Math.max(0.15, profileMult); //min speed
@@ -93,6 +93,7 @@ export function updRobot(robot, pathArray) {
 
     robot.t += indexSpeed;
 
+    //check if weve gone past the end(stop sim if so)
     if (robot.t >= pathArray.length - 1) {
         robot.t = pathArray.length - 1;
         robot.isMoving = false;
@@ -102,9 +103,10 @@ export function updRobot(robot, pathArray) {
     let nextIndex = Math.min(index + 1, pathArray.length - 1);
     localT = robot.t - index;
 
+    //lerp between the two closest pts
     let p1 = pathArray[index];
     let p2 = pathArray[nextIndex];
-
+    
     robot.pose.x = p1.x + (p2.x - p1.x) * localT;
     robot.pose.y = p1.y + (p2.y - p1.y) * localT;
     robot.pose.heading = lerpAngle(p1.heading, p2.heading, localT);
