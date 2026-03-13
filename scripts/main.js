@@ -280,8 +280,12 @@ document.getElementById('btn-add-delay').addEventListener('click', () => {
     renderSidebarBlocks();
 });
 
-if (!event.target.tagName === "select" && !event.target.tagName === "option" && !event.target.tagName === "INPUT") {
-    document.addEventListener('keydown', (e) => {
+
+document.addEventListener('keydown', (e) => {
+    if (event.target.tagName === "SELECT" || event.target.tagName === "OPTION" || event.target.tagName === "INPUT") {
+        return;
+    }
+    else {
         if (e.key === " ") {
             e.preventDefault();
             if (currState === "running") {
@@ -310,8 +314,8 @@ if (!event.target.tagName === "select" && !event.target.tagName === "option" && 
             renderSidebarBlocks();
             updatePath();
         }
-    });
-}
+    }
+});
 
 function updatePath() {
     const drawPose = {
