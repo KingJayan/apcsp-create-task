@@ -280,36 +280,38 @@ document.getElementById('btn-add-delay').addEventListener('click', () => {
     renderSidebarBlocks();
 });
 
-document.addEventListener('keydown', (event) => {
-    if (event.key === " ") {
-        event.preventDefault();
-        if (currState === "running") {
-            currState = "stopped";
-            robot.isMoving = false;
-        } else {
-            currState = "running";
-            robot.isMoving = true;
-            robot.t = 0;
+if (!event.target.tagName === "select" && !event.target.tagName === "option" && !event.target.tagName === "INPUT") {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === " ") {
+            e.preventDefault();
+            if (currState === "running") {
+                currState = "stopped";
+                robot.isMoving = false;
+            } else {
+                currState = "running";
+                robot.isMoving = true;
+                robot.t = 0;
+            }
         }
-    }
-    if (event.key === "e") {
-        event.preventDefault();
-        isEditMode = true;
-        drawModeBtn.classList.remove("active");
-        editModeBtn.classList.add("active");
-    } else if (event.key === "d") {
-        event.preventDefault();
-        isEditMode = false;
-        drawModeBtn.classList.add("active");
-        editModeBtn.classList.remove("active");
-    }
-    if (e.ctrlKey && e.key === "z") {
-        e.preventDefault();
-        waypoints.pop();
-        renderSidebarBlocks();
-        updatePath();
-    }
-});
+        if (e.key === "e") {
+            e.preventDefault();
+            isEditMode = true;
+            drawModeBtn.classList.remove("active");
+            editModeBtn.classList.add("active");
+        } else if (e.key === "d") {
+            e.preventDefault();
+            isEditMode = false;
+            drawModeBtn.classList.add("active");
+            editModeBtn.classList.remove("active");
+        }
+        if (e.ctrlKey && e.key === "z") {
+            e.preventDefault();
+            waypoints.pop();
+            renderSidebarBlocks();
+            updatePath();
+        }
+    });
+}
 
 function updatePath() {
     const drawPose = {
