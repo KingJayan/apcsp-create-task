@@ -368,6 +368,12 @@ canvas {
     inset 0 0 8px 0 rgba(6, 182, 212, 0.05);
 }
 
+select {
+  appearance: none;
+  -webkit-appearance:none;
+  background-image:none;
+}
+
 /*custom glass dropdown*/
 .custom-select {
   appearance: none;

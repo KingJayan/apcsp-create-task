@@ -280,6 +280,27 @@ document.getElementById('btn-add-delay').addEventListener('click', () => {
     renderSidebarBlocks();
 });
 
+document.addEventListener('keydown', (event) => {
+    if (event.key === "space") {
+        event.preventDefault();
+        if (currState === "running") {
+            currState = "stopped";
+            robot.isMoving = false;
+        } else {
+            currState = "running";
+            robot.isMoving = true;
+            robot.t = 0;
+        }
+    }
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === "e") {
+        event.preventDefault();
+        //editing mode
+    }
+});
+
 function updatePath() {
     const drawPose = {
         ...startPose,
