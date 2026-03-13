@@ -86,8 +86,9 @@ export function updRobot(robot, pathArray) {
     let distFromStart = sinceLast + localT;
 
     const RAMP_TICKS = 6;
+    //calc speed to choose if we are near to start, middle(1.0), or end of motion
     let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS);
-    let speedMult = Math.max(0.15, profileMult);
+    let speedMult = Math.max(0.15, profileMult); //min speed
     let indexSpeed = (robot.speed / LINE_RESOLUTION) * speedMult;
 
     robot.t += indexSpeed;
