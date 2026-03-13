@@ -309,9 +309,17 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
+        let cache = waypoints.at[-1];
         waypoints.pop();
         renderSidebarBlocks();
         updatePath();
+    } else if ((e.ctrlKey && e.key === "y") || (e.ctrlKey && e.key === "z" && e.shiftKey)) {
+        e.preventDefault();
+        if (cache) {
+            waypoints.push(cache);
+            renderSidebarBlocks();
+            updatePath();
+        }
     }
 });
 
