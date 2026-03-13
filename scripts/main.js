@@ -281,7 +281,7 @@ document.getElementById('btn-add-delay').addEventListener('click', () => {
 });
 
 document.addEventListener('keydown', (event) => {
-    if (event.key === "space") {
+    if (event.key === " ") {
         event.preventDefault();
         if (currState === "running") {
             currState = "stopped";
@@ -292,22 +292,21 @@ document.addEventListener('keydown', (event) => {
             robot.t = 0;
         }
     }
-});
-
-document.addEventListener('keydown', (event) => {
     if (event.key === "e") {
         event.preventDefault();
         isEditMode = true;
+        drawModeBtn.classList.remove("active");
+        editModeBtn.classList.add("active");
     } else if (event.key === "d") {
         event.preventDefault();
         isEditMode = false;
+        drawModeBtn.classList.add("active");
+        editModeBtn.classList.remove("active");
     }
-});
-
-document.addEventListener('keydown', (e) =>{
-    if (e.key === "control" && e.key === "z") {
+    if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
         waypoints.pop();
+        renderSidebarBlocks();
         updatePath();
     }
 });
