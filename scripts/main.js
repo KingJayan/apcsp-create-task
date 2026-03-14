@@ -258,7 +258,7 @@ function renderSidebarBlocks() {
 `;
         }
 
-        // Setup HTML5 drag events
+        //setup drag events
         block.addEventListener('dragstart', (e) => {
             block.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
