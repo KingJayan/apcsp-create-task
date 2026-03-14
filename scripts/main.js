@@ -413,6 +413,7 @@ document.addEventListener('keydown', (e) => {
             robot.isMoving = true;
             robot.t = 0;
         }
+        updateIndicator();
     }
     if (e.key === "e") {
         e.preventDefault();
@@ -573,8 +574,10 @@ let isDragging = false;
 canvas.addEventListener("mousedown", (e) => {
     if (currState === "running" || !isEditMode) return; //only grab in edit mode
     const rect = canvas.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
 
     draggedIdx = null;
 
@@ -601,8 +604,10 @@ canvas.addEventListener("mousedown", (e) => {
 
 canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    mouse.x = (e.clientX - rect.left) * scaleX;
+    mouse.y = (e.clientY - rect.top) * scaleY;
 
     if (isDragging && draggedIdx !== null && isEditMode) {
         canvas.style.cursor = "grabbing";
