@@ -62,6 +62,7 @@ function undo() {
     updatePath();
     renderSidebarBlocks();
     updateHistoryButtons();
+    renderNow();
 }
 
 function redo() {
@@ -71,6 +72,7 @@ function redo() {
     updatePath();
     renderSidebarBlocks();
     updateHistoryButtons();
+    renderNow();
 }
 
 function updateHistoryButtons() {
@@ -129,6 +131,14 @@ const pathLengthDisplay = document.getElementById('path-length');
 const pathTimeDisplay = document.getElementById('path-time');
 const pathDelayDisplay = document.getElementById('path-delay');
 const curveFeedback = document.getElementById('curve-feedback');
+
+document.addEventListener('pointermove', (e) => {
+    const surface = e.target.closest('.group, .sidebar, .path-block, .input-group, .status, .mode-hint');
+    if (!surface) return;
+    const rect = surface.getBoundingClientRect();
+    surface.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+    surface.style.setProperty('--my', `${e.clientY - rect.top}px`);
+});
 
 //init start pose inputs
 startXInput.value = startPose.x;
@@ -669,22 +679,7 @@ renderSidebarBlocks();
 updateHistoryButtons();
 updateIndicator();
 
-function animate() {
-    //calc new pose
-    if (currState === "running") {
-        updRobot(robot, pathArray)
-
-        if (robotPosDisplay) {
-            let degHeading = robot.pose.heading * (180 / Math.PI);
-            robotPosDisplay.innerText = `X: ${robot.pose.x.toFixed(1)} Y: ${robot.pose.y.toFixed(1)} Heading: ${degHeading.toFixed(0)}°`;
-        }
-
-        if (!robot.isMoving) {
-            currState = "stopped";
-            updateIndicator();
-        }
-    }
-
+function renderNow() {
     let curvePreview = null;
     const shouldShowCurveHint = currState !== "running" && !isEditMode && currMode === "curve";
     if (shouldShowCurveHint) {
@@ -711,6 +706,25 @@ function animate() {
     //render everything
     draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, curvePreview);
     drawRobot(ctx, robot.pose, robot.size);
+}
+
+function animate() {
+    //calc new pose
+    if (currState === "running") {
+        updRobot(robot, pathArray)
+
+        if (robotPosDisplay) {
+            let degHeading = robot.pose.heading * (180 / Math.PI);
+            robotPosDisplay.innerText = `X: ${robot.pose.x.toFixed(1)} Y: ${robot.pose.y.toFixed(1)} Heading: ${degHeading.toFixed(0)}°`;
+        }
+
+        if (!robot.isMoving) {
+            currState = "stopped";
+            updateIndicator();
+        }
+    }
+
+    renderNow();
 
     requestAnimationFrame(animate);
 }
