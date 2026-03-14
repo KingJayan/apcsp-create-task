@@ -106,6 +106,29 @@ canvas {
   transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
 }
 
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn.icon-btn {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+}
+
+.btn-icon.icon-btn {
+  min-width: 22px;
+  min-height: 22px;
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.2;
+}
+
 .btn:hover:not(:disabled) {
   transform: translateY(-1px);
   border-color: rgba(255, 255, 255, 0.12);

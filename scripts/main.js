@@ -47,6 +47,12 @@ let isEditMode = false; //false = draw, true = edit
 let undoStack = [];
 let redoStack = [];
 const HISTORY_LIMIT = 200;
+
+function refreshIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+    }
+}
     
 function snapshot() {
     undoStack.push(structuredClone(waypoints));
@@ -209,7 +215,7 @@ function renderSidebarBlocks() {
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:#f59e0b; font-weight:normal;">${label}</span></span>
-    <button class="btn-icon delete-btn" data-index="${index}">Remove</button>
+    <button class="btn-icon icon-btn delete-btn" data-index="${index}" title="Remove point" aria-label="Remove point"><i data-lucide="x"></i></button>
 </div>
 <div class="input-row">
     <div class="input-group">
@@ -223,7 +229,7 @@ function renderSidebarBlocks() {
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:${tagColor}; font-weight:normal;">${label}</span></span>
-    <button class="btn-icon delete-btn" data-index="${index}">Remove</button>
+    <button class="btn-icon icon-btn delete-btn" data-index="${index}" title="Remove point" aria-label="Remove point"><i data-lucide="x"></i></button>
 </div>
 <div class="input-row">
     <div class="input-group">
@@ -342,12 +348,14 @@ function renderSidebarBlocks() {
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             snapshot();
-            const idx = e.target.getAttribute('data-index');
+            const idx = e.currentTarget.getAttribute('data-index');
             waypoints.splice(idx, 1);
             updatePath();
             renderSidebarBlocks();
         });
     });
+
+    refreshIcons();
 }
 
 // allows dropping between blocks in the container
@@ -379,6 +387,15 @@ document.getElementById('btn-add-delay').addEventListener('click', () => {
     waypoints.push({ type: 'delay', ms: 1000 });
     updatePath();
     renderSidebarBlocks();
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+    if (waypoints.length === 0) return;
+    snapshot();
+    waypoints = [];
+    updatePath();
+    renderSidebarBlocks();
+    renderNow();
 });
 
 
@@ -678,6 +695,7 @@ updatePath();
 renderSidebarBlocks();
 updateHistoryButtons();
 updateIndicator();
+refreshIcons();
 
 function renderNow() {
     let curvePreview = null;
