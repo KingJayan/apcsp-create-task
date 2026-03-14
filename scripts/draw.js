@@ -22,6 +22,9 @@ export function toInch(pixX, pixY) {
 //draws the 6x6 tiled field
 export function drawGrid(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "transparent";
     ctx.strokeStyle = "#27272a";
     ctx.lineWidth = 1;
 
@@ -206,6 +209,11 @@ export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = nu
             }
         }
     }
+
+    // reset effects before drawing static handles/markers
+    ctx.setLineDash([]);
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "transparent";
 
     if (curvePreview) {
         let anchorPix = toPix(curvePreview.anchor.x, curvePreview.anchor.y);

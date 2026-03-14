@@ -4,14 +4,15 @@ body {
   align-items: center;
   background-color: #09090b;
   color: #fafafa;
-  margin-top: 3rem;
+  margin: 0;
+  padding: 2.25rem 1.25rem;
 }
 
 /*app layout--- */
 .app-layout {
   display: flex;
-  gap: 30px;
-  max-width: 1050px;
+  gap: 24px;
+  max-width: 1240px;
   width: 100%;
   justify-content: center;
   align-items: flex-start;
@@ -20,6 +21,8 @@ body {
 .workspace {
   display: flex;
   flex-direction: column;
+  width: min(100%, 600px);
+  min-width: 0;
 }
 
 /* floating glass canvas -*/
@@ -30,22 +33,28 @@ canvas {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 10px 40px -10px rgba(0, 0, 0, 0.6);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  aspect-ratio: 1 / 1;
 }
 
 /*toolbar layout*/
 .toolbar {
   display: flex;
-  gap: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 20px;
-  width: 600px;
+  width: 100%;
   /*match canvas width */
-  justify-content: space-between;
+  justify-content: flex-start;
   animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 .mode-hint {
-  width: 600px;
-  margin-top: -10px;
+  width: 100%;
+  margin-top: -8px;
   margin-bottom: 12px;
   padding: 7px 10px;
   border-radius: 8px;
@@ -66,11 +75,12 @@ canvas {
 .group {
   display: flex;
   gap: 4px;
-  background-color: #18181b;
+  background-color: #111114;
   /*dark inset*/
   padding: 4px;
   border-radius: 8px;
   border: 1px solid #27272a;
+  white-space: nowrap;
 }
 
 /*override basecoat for active toolbar btn*/
@@ -183,12 +193,12 @@ canvas {
 
 /*sidebar and block editor--- */
 .sidebar {
-  flex-grow: 1;
+  width: min(100%, 420px);
   background-color: #121214;
   border: 1px solid #27272a;
   border-radius: 12px;
   padding: 20px;
-  min-width: 380px;
+  min-width: 320px;
   height: 675px;
   overflow-y: auto;
   /*canvas shadows and anims*/
@@ -249,6 +259,10 @@ canvas {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #27272a;
+}
+
+.mono-text + .mono-text {
+  margin-top: 8px;
 }
 
 /*input styling */
@@ -457,4 +471,22 @@ select {
   border: 1px dashed #a1a1aa;
   background: rgba(24, 24, 27, 0.8);
   transform: scale(0.98);
+}
+
+@media (max-width: 1100px) {
+  .app-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .workspace,
+  .sidebar {
+    width: min(100%, 600px);
+  }
+
+  .sidebar {
+    min-width: 0;
+    height: auto;
+    max-height: none;
+  }
 }
