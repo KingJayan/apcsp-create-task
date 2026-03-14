@@ -246,6 +246,11 @@ canvas {
   border-color: #06b6d4;
 }
 
+.muted {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
 .input-group label {
   color: #a1a1aa;
   font-size: 12px;

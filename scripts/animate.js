@@ -1,15 +1,7 @@
 // animate.js
 
 import { LINE_RESOLUTION } from './config.js';
-import { LERP_FREQ } from './config.js';
-
-//helper to prevent snapping
-function lerpAngle(current, target, t) {
-    let diff = target - current;
-    while (diff > Math.PI) diff -= LERP_FREQ * Math.PI;
-    while (diff < -Math.PI) diff += LERP_FREQ * Math.PI;
-    return current + (diff * t);
-}
+import { lerpAngle } from './utils.js';
 
 //calc the angle change between three points
 //used to detect sharp corners in the path

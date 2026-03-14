@@ -1,5 +1,6 @@
 // draw.js
 import { FIELD_SIZE, CANVAS_SIZE, LINE_RESOLUTION, CURVE_STEPS, SPLINE_STEPS } from './config.js';
+import { lerpAngle } from './utils.js';
 
 const SCALE = CANVAS_SIZE / FIELD_SIZE;//~4.16 ppi
 
@@ -46,14 +47,6 @@ export function drawGrid(ctx, canvas) {
     ctx.moveTo(0, canvas.height / 2);
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
-}
-
-//smooth interpolate between angles to prevent snapping/jumping
-function lerpAngle(current, target, t) {
-    let diff = target - current;
-    while (diff > Math.PI) diff -= 2 * Math.PI;
-    while (diff < -Math.PI) diff += 2 * Math.PI;
-    return current + (diff * t);
 }
 
 //math extractor: gen the array of coords
@@ -168,7 +161,7 @@ export function generatePath(allNodes) {
 }
 
 function setCtxStyle(ctx, mode) {
-    if (mode === "line" || mode === "point" || mode == "start") {
+    if (mode === "line" || mode === "point" || mode === "start") {
         ctx.strokeStyle = "#06b6d4";
         ctx.shadowColor = "#06b6d4";
     } else if (mode === "curve") {

@@ -3,7 +3,7 @@
 
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>ftc pathing visualizer</title>
+	<title>pathing visualizer</title>
 
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
 	<script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js" defer></script>
@@ -18,7 +18,7 @@
 			<div class="toolbar">
 				<div class="group">
 					<button id="btn-start" class="btn btn-primary">Start</button>
-					<button id="btn-stop" class="btn btn-error">Stop</button>
+					<button id="btn-stop" class="btn btn-destructive">Stop</button>
 					<div class="status online">
 						<span class="pulse-ring"></span>
 						<span class="pulse-dot"></span>
@@ -66,16 +66,14 @@
 			</div>
 
 			<div class="sidebar-section">
-				<div class="sidebar-section">
-					<h3 style="display: flex; justify-content: space-between; align-items: center;">
-						Path Points
-						<div>
-							<button id="btn-add-delay" class="btn-icon" style="margin-right: 8px;">+ Delay</button>
-							<button id="btn-clear" class="btn-icon">Clear</button>
-						</div>
-					</h3>
-					<div id="path-blocks">
+				<h3 style="display: flex; justify-content: space-between; align-items: center;">
+					Path Points
+					<div>
+						<button id="btn-add-delay" class="btn-icon" style="margin-right: 8px;">+ Delay</button>
+						<button id="btn-clear" class="btn-icon">Clear</button>
 					</div>
+				</h3>
+				<div id="path-blocks">
 				</div>
 			</div>
 		</div>

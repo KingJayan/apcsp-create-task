@@ -21,10 +21,8 @@ const robot = {
     size: ROBOT_SIZE
 };
 
-const state = ["editing", "running", "stopped"];
 let currState = "stopped";
 
-const mode = ["point", "line", "curve", "spline"];
 let currMode = "line";
 
 let mouse = { x: 0, y: 0 };
@@ -171,8 +169,6 @@ function renderSidebarBlocks() {
 `;
         } else {
             const isHeadingUsed = wp.headingInterp === "linear" || !wp.headingInterp;
-            const opacityStyle = isHeadingUsed ? "1" : "0.3";
-            const pointerEvents = isHeadingUsed ? "auto" : "none";
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:${tagColor}; font-weight:normal;">${label}</span></span>
@@ -187,7 +183,7 @@ function renderSidebarBlocks() {
     <label>Y:</label>
     <input type="number" class="input wp-y" data-index="${index}" value="${Math.round(wp.y)}">
 </div>
-<div class="input-group" style="opacity: ${opacityStyle}; pointer-events: ${pointerEvents}; transition: opacity 0.2s;">
+<div class="input-group${isHeadingUsed ? '' : ' muted'}">
     <label>H°:</label>
     <input type="number" class="input wp-h" data-index="${index}" value="${Math.round(wp.heading)}">
 </div>
@@ -623,7 +619,7 @@ function animate() {
     }
 
     //render everything
-    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, currMode);
+    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad);
     drawRobot(ctx, robot.pose, robot.size);
 
     requestAnimationFrame(animate);
