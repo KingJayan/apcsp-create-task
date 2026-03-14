@@ -13,4 +13,4 @@ export const WP_RADIUS = 5;
 export const LINE_RESOLUTION = 5; //dist between line pts
 export const CURVE_STEPS = 25;
 export const SPLINE_STEPS = 25;
-export const LERP_FREQ = 0.25;
+export const LERP_FREQ = 0.4;

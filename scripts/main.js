@@ -182,9 +182,15 @@ function renderSidebarBlocks() {
             wpLabels[i] = 'Wait Action';
             i++;
         } else if (wp.mode === 'curve') {
-            wpLabels[i] = 'Curve Control Pt'; // 1st click is off-path control
-            if (i + 1 < waypoints.length && waypoints[i + 1].type !== 'delay') {
-                wpLabels[i + 1] = 'Curve End Pt'; // 2nd click is path endpoint
+            let c2 = waypoints[i + 1];
+            let endPt = waypoints[i + 2];
+            wpLabels[i] = 'Curve Control 1';
+            if (c2 && c2.type !== 'delay' && endPt && endPt.type !== 'delay') {
+                wpLabels[i + 1] = 'Curve Control 2';
+                wpLabels[i + 2] = 'Curve End Pt';
+                i += 3;
+            } else if (c2 && c2.type !== 'delay') {
+                wpLabels[i + 1] = 'Curve Control 2';
                 i += 2;
             } else {
                 i++;
@@ -487,25 +493,30 @@ function updatePath() {
 
 function getPendingCurve() {
     let anchor = startPose;
-
-    for (let i = 0; i < waypoints.length; i++) {
+    let i = 0;
+    while (i < waypoints.length) {
         let wp = waypoints[i];
-
-        if (wp.type === 'delay') continue;
+        if (wp.type === 'delay') { i++; continue; }
 
         if (wp.mode === 'curve') {
-            const endPt = waypoints[i + 1];
-            if (endPt && endPt.type !== 'delay') {
-                anchor = endPt;
-                i += 1;
+            let c2 = waypoints[i + 1];
+            let endPt = waypoints[i + 2];
+            const c2ok = c2 && c2.type !== 'delay';
+            const endOk = endPt && endPt.type !== 'delay';
+
+            if (c2ok && endOk) {
+                anchor = endPt; // complete cubic — advance
+                i += 3;
+            } else if (c2ok) {
+                return { anchor, control1: wp, control2: c2 }; // need end
             } else {
-                return { anchor, control: wp };
+                return { anchor, control1: wp }; // need c2 and end
             }
         } else {
             anchor = wp;
+            i++;
         }
     }
-
     return null;
 }
 
@@ -704,22 +715,23 @@ refreshIcons();
 
 function renderNow() {
     let curvePreview = null;
+    let pendingCurve = null;
     const shouldShowCurveHint = currState !== "running" && !isEditMode && currMode === "curve";
     if (shouldShowCurveHint) {
-        const pending = getPendingCurve();
-        if (pending) {
+        pendingCurve = getPendingCurve();
+        if (pendingCurve) {
             const mouseInch = toInch(mouse.x, mouse.y);
-            curvePreview = {
-                anchor: pending.anchor,
-                control: pending.control,
-                end: mouseInch
-            };
+            curvePreview = pendingCurve.control2
+                ? { anchor: pendingCurve.anchor, control1: pendingCurve.control1, control2: pendingCurve.control2, end: mouseInch }
+                : { anchor: pendingCurve.anchor, control1: pendingCurve.control1, control2: mouseInch, end: mouseInch };
         }
     }
 
     if (curveFeedback) {
         if (curvePreview) {
-            curveFeedback.textContent = "Curve mode: place end point";
+            curveFeedback.textContent = pendingCurve.control2
+                ? "Curve mode: place end point"
+                : "Curve mode: place control point 2";
             curveFeedback.classList.add('show');
         } else {
             curveFeedback.classList.remove('show');

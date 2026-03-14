@@ -91,18 +91,21 @@ export function generatePath(allNodes) {
             i++;
         }
         else if (mode === "curve") {
-            let p1 = allNodes[i];
-            let p2 = allNodes[i + 1];
+            let c1 = allNodes[i];
+            let c2 = allNodes[i + 1];
+            let p3 = allNodes[i + 2];
 
-            if (!p2) {
-                let steps = CURVE_STEPS;
+            if (!c2 || !p3) {
+                // incomplete cubic — fall back to line toward last available point
+                let endPt = p3 || c2 || c1;
+                let steps = Math.max(1, Math.ceil(Math.hypot(endPt.x - p0.x, endPt.y - p0.y) / LINE_RESOLUTION));
                 for (let s = 1; s <= steps; s++) {
                     let t = s / steps;
-                    let x = p0.x + (p1.x - p0.x) * t;
-                    let y = p0.y + (p1.y - p0.y) * t;
+                    let x = p0.x + (endPt.x - p0.x) * t;
+                    let y = p0.y + (endPt.y - p0.y) * t;
 
-                    let heading = p0.heading; //constant
-                    if (hType === "linear") heading = lerpAngle(p0.heading, p1.heading, t);
+                    let heading = p0.heading;
+                    if (hType === "linear") heading = lerpAngle(p0.heading, endPt.heading, t);
                     else if (hType === "tangential") {
                         if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
                         else heading = lastHeading;
@@ -111,15 +114,17 @@ export function generatePath(allNodes) {
                     path.push({ x, y, heading, mode: "curve" });
                     prevX = x; prevY = y; lastHeading = heading;
                 }
-                i++;
+                i += p3 ? 3 : (c2 ? 2 : 1);
             } else {
-                const steps = SPLINE_STEPS;
+                // cubic bezier: p0 (anchor), c1, c2, p3 (end)
+                const steps = CURVE_STEPS;
                 for (let t = 1 / steps; t <= 1; t += 1 / steps) {
-                    let x = ((1 - t) ** 2) * p0.x + 2 * (1 - t) * t * p1.x + (t ** 2) * p2.x;
-                    let y = ((1 - t) ** 2) * p0.y + 2 * (1 - t) * t * p1.y + (t ** 2) * p2.y;
+                    let mt = 1 - t;
+                    let x = mt**3*p0.x + 3*mt**2*t*c1.x + 3*mt*t**2*c2.x + t**3*p3.x;
+                    let y = mt**3*p0.y + 3*mt**2*t*c1.y + 3*mt*t**2*c2.y + t**3*p3.y;
 
-                    let heading = p0.heading; //constant
-                    if (hType === "linear") heading = lerpAngle(p0.heading, p2.heading, t);
+                    let heading = p0.heading;
+                    if (hType === "linear") heading = lerpAngle(p0.heading, p3.heading, t);
                     else if (hType === "tangential") {
                         if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
                         else heading = lastHeading;
@@ -128,7 +133,7 @@ export function generatePath(allNodes) {
                     path.push({ x, y, heading, mode: "curve" });
                     prevX = x; prevY = y; lastHeading = heading;
                 }
-                i += 2;
+                i += 3;
             }
         }
         else if (mode === "spline") {
@@ -217,19 +222,21 @@ export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = nu
 
     if (curvePreview) {
         let anchorPix = toPix(curvePreview.anchor.x, curvePreview.anchor.y);
-        let controlPix = toPix(curvePreview.control.x, curvePreview.control.y);
+        let c1Pix = toPix(curvePreview.control1.x, curvePreview.control1.y);
+        let c2Pix = toPix(curvePreview.control2.x, curvePreview.control2.y);
         let endPix = toPix(curvePreview.end.x, curvePreview.end.y);
 
         ctx.save();
         ctx.shadowBlur = 0;
         ctx.setLineDash([6, 6]);
 
-        //draw control triangle to show bezier shape influence
+        // cubic bezier hull: anchor → c1 → c2 → end
         ctx.strokeStyle = "rgba(168, 85, 247, 0.45)";
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(anchorPix.x, anchorPix.y);
-        ctx.lineTo(controlPix.x, controlPix.y);
+        ctx.lineTo(c1Pix.x, c1Pix.y);
+        ctx.lineTo(c2Pix.x, c2Pix.y);
         ctx.lineTo(endPix.x, endPix.y);
         ctx.stroke();
 
@@ -237,7 +244,7 @@ export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = nu
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(anchorPix.x, anchorPix.y);
-        ctx.quadraticCurveTo(controlPix.x, controlPix.y, endPix.x, endPix.y);
+        ctx.bezierCurveTo(c1Pix.x, c1Pix.y, c2Pix.x, c2Pix.y, endPix.x, endPix.y);
         ctx.stroke();
 
         ctx.setLineDash([]);
