@@ -32,11 +32,17 @@
 				</div>
 
 				<div class="group">
+					<button id="btn-undo" class="btn" title="Ctrl+Z">Undo</button>
+					<button id="btn-redo" class="btn" title="Ctrl+Y / Ctrl+Shift+Z">Redo</button>
+				</div>
+
+				<div class="group">
 					<button id="btn-line" class="btn active">Line</button>
 					<button id="btn-curve" class="btn">Curve</button>
 					<button id="btn-spline" class="btn">Spline</button>
 				</div>
 			</div>
+			<div id="curve-feedback" class="mode-hint">Curve mode: place end point</div>
 
 			<canvas id="ctx" width="600" height="600"></canvas>
 		</div>
@@ -46,7 +52,13 @@
 				<h3>Current Robot Position</h3>
 				<div id="robot-pos-display" class="mono-text">X: 0.00 Y: 0.00 Heading: 0°</div>
 			</div>
-	
+			<div class="sidebar-section">
+				<h3>Path Stats</h3>
+				<div id="path-length" class="mono-text">Path: 0.00 in</div>
+				<div id="path-time" class="mono-text">Est. Time: 0.00 s</div>
+				<div id="path-delay" class="mono-text">Delay: 0.00 s</div>
+			</div>
+
 			<div class="sidebar-section">
 				<h3>Starting Point <span>(Start Pose)</span></h3>
 				<div class="input-row">

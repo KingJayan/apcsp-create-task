@@ -30,6 +30,8 @@ let mouse = { x: 0, y: 0 };
 //toolbar UI elements
 const startBtn = document.getElementById('btn-start');
 const stopBtn = document.getElementById('btn-stop');
+const undoBtn = document.getElementById('btn-undo');
+const redoBtn = document.getElementById('btn-redo');
 const modeButtons = {
     line: document.getElementById('btn-line'),
     curve: document.getElementById('btn-curve'),
@@ -50,6 +52,7 @@ function snapshot() {
     undoStack.push(structuredClone(waypoints));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
     redoStack.length = 0;
+    updateHistoryButtons();
 }
 
 function undo() {
@@ -58,6 +61,7 @@ function undo() {
     waypoints = undoStack.pop();
     updatePath();
     renderSidebarBlocks();
+    updateHistoryButtons();
 }
 
 function redo() {
@@ -66,6 +70,36 @@ function redo() {
     waypoints = redoStack.pop();
     updatePath();
     renderSidebarBlocks();
+    updateHistoryButtons();
+}
+
+function updateHistoryButtons() {
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+}
+
+function updatePathStats() {
+    let distIn = 0;
+    let delayMs = 0;
+
+    for (let i = 1; i < pathArray.length; i++) {
+        let p0 = pathArray[i - 1];
+        let p1 = pathArray[i];
+        if (p1.type === 'delay') {
+            delayMs += p1.ms || 0;
+            continue;
+        }
+        if (p0.type === 'delay') continue;
+        distIn += Math.hypot(p1.x - p0.x, p1.y - p0.y);
+    }
+
+    const driveSecs = robot.speed > 0 ? distIn / robot.speed : 0;
+    const delaySecs = delayMs / 1000;
+    const totalSecs = driveSecs + delaySecs;
+
+    if (pathLengthDisplay) pathLengthDisplay.innerText = `Path: ${distIn.toFixed(2)} in`;
+    if (pathTimeDisplay) pathTimeDisplay.innerText = `Est. Time: ${totalSecs.toFixed(2)} s`;
+    if (pathDelayDisplay) pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
 }
 
 drawModeBtn.addEventListener("click", () => {
@@ -82,12 +116,19 @@ editModeBtn.addEventListener("click", () => {
     canvas.style.cursor = "default";
 });
 
+if (undoBtn) undoBtn.addEventListener('click', undo);
+if (redoBtn) redoBtn.addEventListener('click', redo);
+
 //sidebar UI elements
 const startXInput = document.getElementById('start-x');
 const startYInput = document.getElementById('start-y');
 const startHInput = document.getElementById('start-h');
 const pathBlocksContainer = document.getElementById('path-blocks');
 const robotPosDisplay = document.getElementById('robot-pos-display');
+const pathLengthDisplay = document.getElementById('path-length');
+const pathTimeDisplay = document.getElementById('path-time');
+const pathDelayDisplay = document.getElementById('path-delay');
+const curveFeedback = document.getElementById('curve-feedback');
 
 //init start pose inputs
 startXInput.value = startPose.x;
@@ -409,10 +450,35 @@ function updatePath() {
     }
 
     pathArray = finalPath;
+    updatePathStats();
 
     if (robotPosDisplay && currState !== "running") {
         robotPosDisplay.innerText = `X: ${drawPose.x.toFixed(1)} Y: ${drawPose.y.toFixed(1)} Heading: ${startPose.heading}°`;
     }
+}
+
+function getPendingCurve() {
+    let anchor = startPose;
+
+    for (let i = 0; i < waypoints.length; i++) {
+        let wp = waypoints[i];
+
+        if (wp.type === 'delay') continue;
+
+        if (wp.mode === 'curve') {
+            const endPt = waypoints[i + 1];
+            if (endPt && endPt.type !== 'delay') {
+                anchor = endPt;
+                i += 1;
+            } else {
+                return { anchor, control: wp };
+            }
+        } else {
+            anchor = wp;
+        }
+    }
+
+    return null;
 }
 
 //visual indicator helper
@@ -600,6 +666,7 @@ canvas.addEventListener("mouseleave", () => {
 //init generation
 updatePath();
 renderSidebarBlocks();
+updateHistoryButtons();
 updateIndicator();
 
 function animate() {
@@ -618,8 +685,31 @@ function animate() {
         }
     }
 
+    let curvePreview = null;
+    const shouldShowCurveHint = currState !== "running" && !isEditMode && currMode === "curve";
+    if (shouldShowCurveHint) {
+        const pending = getPendingCurve();
+        if (pending) {
+            const mouseInch = toInch(mouse.x, mouse.y);
+            curvePreview = {
+                anchor: pending.anchor,
+                control: pending.control,
+                end: mouseInch
+            };
+        }
+    }
+
+    if (curveFeedback) {
+        if (curvePreview) {
+            curveFeedback.textContent = "Curve mode: place end point";
+            curveFeedback.classList.add('show');
+        } else {
+            curveFeedback.classList.remove('show');
+        }
+    }
+
     //render everything
-    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad);
+    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, curvePreview);
     drawRobot(ctx, robot.pose, robot.size);
 
     requestAnimationFrame(animate);

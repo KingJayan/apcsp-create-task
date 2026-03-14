@@ -43,6 +43,26 @@ canvas {
   animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
+.mode-hint {
+  width: 600px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.12);
+  color: #d8b4fe;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.mode-hint.show {
+  opacity: 1;
+}
+
 .group {
   display: flex;
   gap: 4px;
@@ -59,6 +79,12 @@ canvas {
   color: #fafafa;
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /*status indicator*/

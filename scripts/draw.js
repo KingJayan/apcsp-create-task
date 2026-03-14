@@ -176,7 +176,7 @@ function setCtxStyle(ctx, mode) {
 }
 
     
-export function draw(ctx, canvas, waypoints, pathArray, wpRad) {
+export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = null) {
     drawGrid(ctx, canvas);
 
     //draw path line
@@ -205,6 +205,40 @@ export function draw(ctx, canvas, waypoints, pathArray, wpRad) {
                 }
             }
         }
+    }
+
+    if (curvePreview) {
+        let anchorPix = toPix(curvePreview.anchor.x, curvePreview.anchor.y);
+        let controlPix = toPix(curvePreview.control.x, curvePreview.control.y);
+        let endPix = toPix(curvePreview.end.x, curvePreview.end.y);
+
+        ctx.save();
+        ctx.shadowBlur = 0;
+        ctx.setLineDash([6, 6]);
+
+        //draw control triangle to show bezier shape influence
+        ctx.strokeStyle = "rgba(168, 85, 247, 0.45)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(anchorPix.x, anchorPix.y);
+        ctx.lineTo(controlPix.x, controlPix.y);
+        ctx.lineTo(endPix.x, endPix.y);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#a855f7";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(anchorPix.x, anchorPix.y);
+        ctx.quadraticCurveTo(controlPix.x, controlPix.y, endPix.x, endPix.y);
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(168, 85, 247, 0.25)";
+        ctx.beginPath();
+        ctx.arc(endPix.x, endPix.y, wpRad + 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
     }
 
     //draw wps + heading indicators on pts
