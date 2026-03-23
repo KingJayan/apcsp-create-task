@@ -27,6 +27,8 @@ let currMode = "line";
 
 let mouse = { x: 0, y: 0 };
 
+let isDirty = true; //canvas needs redraw
+
 //toolbar UI elements
 const startBtn = document.getElementById('btn-start');
 const stopBtn = document.getElementById('btn-stop');
@@ -45,7 +47,7 @@ const segmentGroup = document.getElementById('segment-group');
 
 let isEditMode = false; //false = draw, true = edit
 
-function setMode(editMode) {
+function setWhichMode(editMode) {
     isEditMode = editMode;
     if (editMode) {
         editModeBtn.classList.add("active");
@@ -126,8 +128,8 @@ function updatePathStats() {
     if (pathDelayDisplay) pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
 }
 
-drawModeBtn.addEventListener("click", () => setMode(false));
-editModeBtn.addEventListener("click", () => setMode(true));
+drawModeBtn.addEventListener("click", () => setWhichMode(false));
+editModeBtn.addEventListener("click", () => setWhichMode(true));
 
 if (undoBtn) undoBtn.addEventListener('click', undo);
 if (redoBtn) redoBtn.addEventListener('click', redo);
@@ -174,11 +176,8 @@ startHInput.value = startPose.heading;
     });
 });
 
-//upd the list of pts
-function renderSidebarBlocks() {
-    pathBlocksContainer.innerHTML = '';
-
-    //pre-calculate semantic roles so we know which points are controls/ends
+//pre-calculate semantic role labels for the waypoints array
+function buildWpLabels() {
     let wpLabels = [];
     let i = 0;
     while (i < waypoints.length) {
@@ -208,8 +207,125 @@ function renderSidebarBlocks() {
             i++;
         }
     }
+    return wpLabels;
+}
 
-    //render the blocks using the calculated labels
+//attach event listeners after a full rebuild
+function attachSidebarListeners() {
+    document.querySelectorAll('.wp-x').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].x = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+        input.addEventListener('input', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].x = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+    });
+    document.querySelectorAll('.wp-y').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].y = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+        input.addEventListener('input', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].y = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+    });
+    document.querySelectorAll('.wp-h').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].heading = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+        input.addEventListener('input', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].heading = parseFloat(e.target.value) || 0;
+            updatePath();
+        });
+    });
+    document.querySelectorAll('.wp-delay').forEach(input => {
+        input.addEventListener('change', (e) => {
+            snapshot();
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].ms = parseInt(e.target.value, 10) || 0;
+            updatePath();
+        });
+        input.addEventListener('input', (e) => {
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].ms = parseInt(e.target.value, 10) || 0;
+            updatePath();
+        });
+    });
+    document.querySelectorAll('.wp-interp').forEach(select => {
+        select.addEventListener('change', (e) => {
+            snapshot();
+            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            waypoints[idx].headingInterp = e.target.value;
+            updatePath();
+            renderSidebarBlocks();
+        });
+    });
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            snapshot();
+            const idx = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+            waypoints.splice(idx, 1);
+            updatePath();
+            renderSidebarBlocks();
+        });
+    });
+}
+
+//upd the list of pts — updates in place if structure matches, full rebuild otherwise
+function renderSidebarBlocks() {
+    const existingBlocks = [...pathBlocksContainer.querySelectorAll('.path-block')];
+
+    //check if structure matches: same count, same order of types, correct indices
+    const structureMatches = existingBlocks.length === waypoints.length &&
+        existingBlocks.every((b, i) => {
+            const wp = waypoints[i];
+            const blockIsDelay = b.classList.contains('delay-block');
+            const wpIsDelay = wp.type === 'delay';
+            return parseInt(b.dataset.index, 10) === i && blockIsDelay === wpIsDelay;
+        });
+
+    if (structureMatches) {
+        //in-place update: just refresh values without touching the DOM structure
+        waypoints.forEach((wp, index) => {
+            const block = existingBlocks[index];
+            if (wp.type === 'delay') {
+                const delayInput = block.querySelector('.wp-delay');
+                if (delayInput && document.activeElement !== delayInput) delayInput.value = wp.ms || 1000;
+            } else {
+                const xInput = block.querySelector('.wp-x');
+                const yInput = block.querySelector('.wp-y');
+                const hInput = block.querySelector('.wp-h');
+                const interpSelect = block.querySelector('.wp-interp');
+                if (xInput && document.activeElement !== xInput) xInput.value = Math.round(wp.x);
+                if (yInput && document.activeElement !== yInput) yInput.value = Math.round(wp.y);
+                if (hInput && document.activeElement !== hInput) hInput.value = Math.round(wp.heading);
+                if (interpSelect && document.activeElement !== interpSelect) interpSelect.value = wp.headingInterp || 'linear';
+
+                //update the muted class on the heading input group
+                const isHeadingMuted = wp.headingInterp && wp.headingInterp !== 'linear';
+                if (hInput) hInput.closest('.input-group').classList.toggle('muted', isHeadingMuted);
+            }
+        });
+        return;
+    }
+
+    //full rebuild
+    pathBlocksContainer.innerHTML = '';
+    const wpLabels = buildWpLabels();
+
     waypoints.forEach((wp, index) => {
         const block = document.createElement('div');
         block.className = `path-block ${wp.type === 'delay' ? 'delay-block' : ''}`;
@@ -236,7 +352,7 @@ function renderSidebarBlocks() {
 </div>
 `;
         } else {
-            const isHeadingUsed = wp.headingInterp === "linear" || !wp.headingInterp;
+            const isHeadingMuted = wp.headingInterp && wp.headingInterp !== 'linear';
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:${tagColor}; font-weight:normal;">${label}</span></span>
@@ -251,7 +367,7 @@ function renderSidebarBlocks() {
     <label>Y:</label>
     <input type="number" class="input wp-y" data-index="${index}" value="${Math.round(wp.y)}">
 </div>
-<div class="input-group${isHeadingUsed ? '' : ' muted'}">
+<div class="input-group${isHeadingMuted ? ' muted' : ''}">
     <label>H°:</label>
     <input type="number" class="input wp-h" data-index="${index}" value="${Math.round(wp.heading)}">
 </div>
@@ -260,7 +376,7 @@ function renderSidebarBlocks() {
     <div class="input-group">
         <label>Heading Interp:</label>
         <select class="custom-select wp-interp" data-index="${index}">
-            <option value="linear" ${wp.headingInterp === 'linear' ? 'selected' : ''}>Linear</option>
+            <option value="linear" ${wp.headingInterp === 'linear' || !wp.headingInterp ? 'selected' : ''}>Linear</option>
             <option value="tangential" ${wp.headingInterp === 'tangential' ? 'selected' : ''}>Tangential</option>
             <option value="constant" ${wp.headingInterp === 'constant' ? 'selected' : ''}>Constant</option>
         </select>
@@ -282,7 +398,7 @@ function renderSidebarBlocks() {
 
             const newWaypoints = [];
             document.querySelectorAll('.path-block').forEach(b => {
-                const originalIdx = parseInt(b.dataset.index);
+                const originalIdx = parseInt(b.dataset.index, 10);
                 newWaypoints.push(waypoints[originalIdx]);
             });
 
@@ -294,78 +410,7 @@ function renderSidebarBlocks() {
         pathBlocksContainer.appendChild(block);
     });
 
-    // attach listeners
-    document.querySelectorAll('.wp-x').forEach(input => {
-        input.addEventListener('change', (e) => {
-            snapshot();
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].x = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-        input.addEventListener('input', (e) => {
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].x = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-    });
-    document.querySelectorAll('.wp-y').forEach(input => {
-        input.addEventListener('change', (e) => {
-            snapshot();
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].y = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-        input.addEventListener('input', (e) => {
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].y = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-    });
-    document.querySelectorAll('.wp-h').forEach(input => {
-        input.addEventListener('change', (e) => {
-            snapshot();
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].heading = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-        input.addEventListener('input', (e) => {
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].heading = parseFloat(e.target.value) || 0;
-            updatePath();
-        });
-    });
-    document.querySelectorAll('.wp-delay').forEach(input => {
-        input.addEventListener('change', (e) => {
-            snapshot();
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].ms = parseInt(e.target.value) || 0;
-            updatePath();
-        });
-        input.addEventListener('input', (e) => {
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].ms = parseInt(e.target.value) || 0;
-            updatePath();
-        });
-    });
-    document.querySelectorAll('.wp-interp').forEach(select => {
-        select.addEventListener('change', (e) => {
-            snapshot();
-            const idx = e.target.getAttribute('data-index');
-            waypoints[idx].headingInterp = e.target.value;
-            updatePath();
-            renderSidebarBlocks();
-        });
-    });
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            snapshot();
-            const idx = e.currentTarget.getAttribute('data-index');
-            waypoints.splice(idx, 1);
-            updatePath();
-            renderSidebarBlocks();
-        });
-    });
-
+    attachSidebarListeners();
     refreshIcons();
 }
 
@@ -428,10 +473,10 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.key === "e") {
         e.preventDefault();
-        setMode(true);
+        setWhichMode(true);
     } else if (e.key === "d") {
         e.preventDefault();
-        setMode(false);
+        setWhichMode(false);
     }
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
@@ -443,6 +488,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 function updatePath() {
+    isDirty = true;
+
     const drawPose = {
         ...startPose,
         heading: startPose.heading * (Math.PI / 180),
@@ -562,26 +609,24 @@ stopBtn.addEventListener("click", () => {
     updateIndicator();
 });
 
-//func to handle mode switching, update btn visuals
-function setMode(newMode) {
+//func to handle segment type switching, update btn visuals
+function setSgmtMode(newMode) {
     currMode = newMode;
 
     //switch active class
     Object.values(modeButtons).forEach(btn => btn.classList.remove("active"));
     modeButtons[newMode].classList.add("active");
-    console.log("Mode:", currMode);
-
-    updatePath();//recalc path when mode changes
 }
 
-modeButtons.line.addEventListener("click", () => setMode("line"));
-modeButtons.curve.addEventListener("click", () => setMode("curve"));
-modeButtons.spline.addEventListener("click", () => setMode("spline"));
+modeButtons.line.addEventListener("click", () => setSgmtMode("line"));
+modeButtons.curve.addEventListener("click", () => setSgmtMode("curve"));
+modeButtons.spline.addEventListener("click", () => setSgmtMode("spline"));
 
 
 //drag state vars
 let draggedIdx = null; // -1 for start, 0+ for wp
 let isDragging = false;
+let pendingSnapshot = null; //saved before drag, only committed if point actually moves
 
 canvas.addEventListener("mousedown", (e) => {
     if (currState === "running" || !isEditMode) return; //only grab in edit mode
@@ -596,7 +641,7 @@ canvas.addEventListener("mousedown", (e) => {
     //check start pose first
     let spPix = toPix(startPose.x, startPose.y);
     if (Math.hypot(clickX - spPix.x, clickY - spPix.y) < wpRad + 15) {
-        snapshot(); //save state before drag
+        pendingSnapshot = structuredClone(waypoints); //tentative snapshot, committed on first actual move
         draggedIdx = -1;
         isDragging = true;
         return;
@@ -606,7 +651,7 @@ canvas.addEventListener("mousedown", (e) => {
     for (let i = 0; i < waypoints.length; i++) {
         let wpPix = toPix(waypoints[i].x, waypoints[i].y);
         if (Math.hypot(clickX - wpPix.x, clickY - wpPix.y) < wpRad + 15) {
-            snapshot(); //save state before drag
+            pendingSnapshot = structuredClone(waypoints); //tentative snapshot, committed on first actual move
             draggedIdx = i;
             isDragging = true;
             return;
@@ -621,7 +666,18 @@ canvas.addEventListener("mousemove", (e) => {
     mouse.x = (e.clientX - rect.left) * scaleX;
     mouse.y = (e.clientY - rect.top) * scaleY;
 
+    isDirty = true;
+
     if (isDragging && draggedIdx !== null && isEditMode) {
+        //commit the pending snapshot on first actual movement
+        if (pendingSnapshot !== null) {
+            undoStack.push(pendingSnapshot);
+            if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+            redoStack.length = 0;
+            updateHistoryButtons();
+            pendingSnapshot = null;
+        }
+
         canvas.style.cursor = "grabbing";
         const inchPos = toInch(mouse.x, mouse.y);
 
@@ -696,15 +752,17 @@ canvas.addEventListener("mouseup", (e) => {
         renderSidebarBlocks();
     }
 
+    pendingSnapshot = null; //discard if click without drag
     isDragging = false;
     draggedIdx = null;
     if (currState !== "running") canvas.style.cursor = isEditMode ? "default" : "crosshair";
 });
 
 canvas.addEventListener("mouseleave", () => {
+    pendingSnapshot = null;
     isDragging = false;
     draggedIdx = null;
-    canvas.style.cursor = "default";
+    canvas.style.cursor = isEditMode ? "default" : "crosshair";
 });
 
 //init generation
@@ -747,7 +805,8 @@ function renderNow() {
 function animate() {
     //calc new pose
     if (currState === "running") {
-        updRobot(robot, pathArray)
+        updRobot(robot, pathArray);
+        isDirty = true;
 
         if (robotPosDisplay) {
             let degHeading = robot.pose.heading * (180 / Math.PI);
@@ -760,7 +819,10 @@ function animate() {
         }
     }
 
-    renderNow();
+    if (isDirty) {
+        renderNow();
+        isDirty = false;
+    }
 
     requestAnimationFrame(animate);
 }
