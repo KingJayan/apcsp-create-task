@@ -33,7 +33,7 @@ export function updRobot(robot, pathArray) {
             return; // still waiting, halt physics
         } else {
             robot.delayStart = null;
-            robot.t += 1.0; //skip past delay node
+            robot.t = index + 1; //skip past delay node
             if (robot.t >= pathArray.length - 1) {
                 robot.t = pathArray.length - 1;
                 robot.isMoving = false;
