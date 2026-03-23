@@ -1,0 +1,22 @@
+{
+  "name": "apcsp-create-task",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jayan P",
+  "license": "ISC",
+  "description": "hi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KingJayan/apcsp-create-task.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KingJayan/apcsp-create-task/issues"
+  },
+  "homepage": "https://github.com/KingJayan/apcsp-create-task#readme",
+  "devDependencies": {
+    "less": "^4.6.4"
+  }
+}
