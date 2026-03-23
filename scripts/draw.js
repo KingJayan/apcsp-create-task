@@ -3,7 +3,7 @@ import { FIELD_SIZE, CANVAS_SIZE, LINE_RESOLUTION, CURVE_STEPS, SPLINE_STEPS } f
 import { lerpAngle } from './utils.js';
 
 const SCALE = CANVAS_SIZE / FIELD_SIZE;//~4.16 ppi
-
+ 
 //helper function
 export function toPix(inchX, inchY) {
     return {
@@ -120,8 +120,8 @@ export function generatePath(allNodes) {
                 const steps = CURVE_STEPS;
                 for (let t = 1 / steps; t <= 1; t += 1 / steps) {
                     let mt = 1 - t;
-                    let x = mt**3*p0.x + 3*mt**2*t*c1.x + 3*mt*t**2*c2.x + t**3*p3.x;
-                    let y = mt**3*p0.y + 3*mt**2*t*c1.y + 3*mt*t**2*c2.y + t**3*p3.y;
+                    let x = mt ** 3 * p0.x + 3 * mt ** 2 * t * c1.x + 3 * mt * t ** 2 * c2.x + t ** 3 * p3.x;
+                    let y = mt ** 3 * p0.y + 3 * mt ** 2 * t * c1.y + 3 * mt * t ** 2 * c2.y + t ** 3 * p3.y;
 
                     let heading = p0.heading;
                     if (hType === "linear") heading = lerpAngle(p0.heading, p3.heading, t);
@@ -183,7 +183,7 @@ function setCtxStyle(ctx, mode) {
     ctx.shadowBlur = 6;
 }
 
-    
+
 export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = null) {
     drawGrid(ctx, canvas);
 
