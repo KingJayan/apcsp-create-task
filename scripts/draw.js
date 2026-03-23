@@ -19,7 +19,7 @@ export function toInch(pixX, pixY) {
     };
 }
 
-//draws the 6x6 tiled field
+//draws the 6x6 tiled field 
 export function drawGrid(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setLineDash([]);
