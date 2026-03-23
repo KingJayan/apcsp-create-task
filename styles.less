@@ -1,24 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-:root {
-  --bg: #09090b;
-  --panel: #111114;
-  --panel-2: #141419;
-  --panel-soft: rgba(20, 20, 25, 0.78);
-  --border: #2a2a31;
-  --border-soft: #3a3a44;
-  --text: #fafafa;
-  --muted: #a3a3b0;
-  --accent: #22d3ee;
-  --shadow: 0 18px 46px -22px rgba(0, 0, 0, 0.75);
-}
+@bg: #09090b;
+@panel: #111114;
+@panel-2: #141419;
+@panel-soft: rgba(20, 20, 25, 0.78);
+@border: #2a2a31;
+@border-soft: #3a3a44;
+@text: #fafafa;
+@muted: #a3a3b0;
+@accent: #22d3ee;
+@shadow: 0 18px 46px -22px rgba(0, 0, 0, 0.75);
 
 body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: @bg;
+  color: @text;
   margin: 0;
   padding: 2.25rem 1.25rem;
   font-family: 'Space Grotesk', sans-serif;
@@ -43,10 +41,10 @@ body {
 
 /* floating glass canvas -*/
 canvas {
-  background-color: var(--panel-2);
-  border: solid var(--border);
+  background-color: @panel-2;
+  border: solid @border;
   border-radius: 12px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), @shadow;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   width: 100%;
@@ -95,7 +93,7 @@ canvas {
   /*dark inset*/
   padding: 4px;
   border-radius: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid @border;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
@@ -142,7 +140,7 @@ canvas {
 /*override basecoat for active toolbar btn*/
 .btn.active {
   background-color: rgba(255, 255, 255, 0.075);
-  color: var(--text);
+  color: @text;
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 18px -12px rgba(255, 255, 255, 0.45);
 }
@@ -162,7 +160,7 @@ canvas {
   margin-left: 10px;
   padding: 4px 12px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
+  border: 1px solid @border;
   border-radius: 20px;
   overflow: hidden;
 }
@@ -184,7 +182,7 @@ canvas {
 
 .p-ind {
   font-size: 12px;
-  color: var(--muted);
+  color: @muted;
   margin: 0;
   font-weight: 500;
 }
@@ -251,8 +249,8 @@ canvas {
 /*sidebar and block editor--- */
 .sidebar {
   width: min(100%, 420px);
-  background-color: var(--panel);
-  border: 1px solid var(--border);
+  background-color: @panel;
+  border: 1px solid @border;
   border-radius: 12px;
   padding: 20px;
   min-width: 320px;
@@ -260,7 +258,7 @@ canvas {
   overflow-y: auto;
   overflow-x: hidden;
   /*canvas shadows and anims*/
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), @shadow;
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   animation-delay: 0.1s;
   position: relative;
@@ -286,7 +284,7 @@ canvas {
 
 .sidebar-section {
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid @border;
   padding-bottom: 20px;
 }
 
@@ -305,7 +303,7 @@ canvas {
 }
 
 .sidebar h3 span {
-  color: var(--muted);
+  color: @muted;
   font-weight: 400;
   font-size: 12px;
 }
@@ -317,7 +315,7 @@ canvas {
   background: #0a0a0f;
   padding: 8px 12px;
   border-radius: 6px;
-  border: 1px solid var(--border);
+  border: 1px solid @border;
 }
 
 .mono-text + .mono-text {
@@ -334,7 +332,7 @@ canvas {
   display: flex;
   align-items: center;
   background-color: rgba(21, 21, 27, 0.86);
-  border: 1px solid var(--border);
+  border: 1px solid @border;
   border-radius: 6px;
   padding: 6px 10px;
   flex: 1;
@@ -353,7 +351,7 @@ canvas {
 }
 
 .input-group label {
-  color: var(--muted);
+  color: @muted;
   font-size: 12px;
   margin-right: 6px;
   font-weight: 500;
@@ -379,7 +377,7 @@ canvas {
 /*dyn wp blocks */
 .path-block {
   background-color: rgba(24, 24, 30, 0.84);
-  border: 1px solid var(--border);
+  border: 1px solid @border;
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
@@ -397,7 +395,7 @@ canvas {
 
 .path-block-header {
   font-size: 12px;
-  color: var(--text);
+  color: @text;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
@@ -407,7 +405,7 @@ canvas {
 .btn-icon {
   background: transparent;
   border: none;
-  color: var(--muted);
+  color: @muted;
   cursor: pointer;
   font-size: 12px;
   padding: 0;
@@ -447,10 +445,10 @@ canvas {
 
 .path-block,
 .input-group {
-  background: var(--panel-soft);
+  background: @panel-soft;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
+  border: 1px solid @border;
   transition: all 0.3s ease;
 }
 
@@ -493,7 +491,7 @@ canvas {
 /*light radius glow on hover*/
 .path-block:hover {
   background: rgba(34, 34, 42, 0.9);
-  border-color: var(--border-soft);
+  border-color: @border-soft;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4),
     /*outer shadow */
     0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -501,12 +499,12 @@ canvas {
 }
 
 .input-group:hover {
-  border-color: var(--border-soft);
+  border-color: @border-soft;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .input-group:focus-within {
-  border-color: var(--accent);
+  border-color: @accent;
   background: rgba(24, 24, 30, 0.96);
   box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2),
     inset 0 0 10px 0 rgba(34, 211, 238, 0.05);
