@@ -7,7 +7,7 @@ import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from './config.js';
 const canvas = document.getElementById("ctx");
 const ctx = canvas.getContext("2d");
 
-//state vars
+//state vars 
 const startPose = { x: -48, y: -48, heading: 90 };
 let waypoints = []; //user pts
 let pathArray = []; //array to calc path
@@ -71,7 +71,7 @@ function refreshIcons() {
         window.lucide.createIcons();
     }
 }
-    
+
 function snapshot() {
     undoStack.push(structuredClone(waypoints));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
