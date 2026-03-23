@@ -41,8 +41,24 @@ const modeButtons = {
 //draw vs edit toggle
 const drawModeBtn = document.getElementById('btn-mode-draw');
 const editModeBtn = document.getElementById('btn-mode-edit');
+const segmentGroup = document.getElementById('segment-group');
 
 let isEditMode = false; //false = draw, true = edit
+
+function setMode(editMode) {
+    isEditMode = editMode;
+    if (editMode) {
+        editModeBtn.classList.add("active");
+        drawModeBtn.classList.remove("active");
+        canvas.style.cursor = "default";
+        segmentGroup.style.display = "none";
+    } else {
+        drawModeBtn.classList.add("active");
+        editModeBtn.classList.remove("active");
+        canvas.style.cursor = "crosshair";
+        segmentGroup.style.display = "";
+    }
+}
 
 let undoStack = [];
 let redoStack = [];
@@ -110,19 +126,8 @@ function updatePathStats() {
     if (pathDelayDisplay) pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
 }
 
-drawModeBtn.addEventListener("click", () => {
-    isEditMode = false;
-    drawModeBtn.classList.add("active");
-    editModeBtn.classList.remove("active");
-    canvas.style.cursor = "crosshair";
-});
-
-editModeBtn.addEventListener("click", () => {
-    isEditMode = true;
-    editModeBtn.classList.add("active");
-    drawModeBtn.classList.remove("active");
-    canvas.style.cursor = "default";
-});
+drawModeBtn.addEventListener("click", () => setMode(false));
+editModeBtn.addEventListener("click", () => setMode(true));
 
 if (undoBtn) undoBtn.addEventListener('click', undo);
 if (redoBtn) redoBtn.addEventListener('click', redo);
@@ -423,14 +428,10 @@ document.addEventListener('keydown', (e) => {
     }
     if (e.key === "e") {
         e.preventDefault();
-        isEditMode = true;
-        drawModeBtn.classList.remove("active");
-        editModeBtn.classList.add("active");
+        setMode(true);
     } else if (e.key === "d") {
         e.preventDefault();
-        isEditMode = false;
-        drawModeBtn.classList.add("active");
-        editModeBtn.classList.remove("active");
+        setMode(false);
     }
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();

@@ -2,109 +2,109 @@
 <html>
 
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>pathing visualizer</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>pathing visualizer</title>
 
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
-	<script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js" defer></script>
-	<script src="https://unpkg.com/lucide@latest"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/basecoat.cdn.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/basecoat-css@0.3.11/dist/js/all.min.js" defer></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
 
-	<link rel="stylesheet" href="styles.css">
+        <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-	<div class="app-layout">
-		<div class="workspace">
-			<div class="toolbar">
-				<div class="group">
-					<button id="btn-start" class="btn btn-primary icon-btn" title="Start" aria-label="Start">
-						<i data-lucide="play"></i>
-					</button>
-					<button id="btn-stop" class="btn btn-destructive icon-btn" title="Stop" aria-label="Stop">
-						<i data-lucide="square"></i>
-					</button>
-					<div class="status online">
-						<span class="pulse-ring"></span>
-						<span class="pulse-dot"></span>
-						<p id="txt-indicator" class="p-ind">Running...</p>
-					</div>
-				</div>
+        <div class="app-layout">
+                <div class="workspace">
+                        <div class="toolbar">
+                                <div class="group">
+                                        <button id="btn-start" class="btn btn-primary icon-btn" title="Start" aria-label="Start">
+                                                <i data-lucide="play"></i>
+                                        </button>
+                                        <button id="btn-stop" class="btn btn-destructive icon-btn" title="Stop" aria-label="Stop">
+                                                <i data-lucide="square"></i>
+                                        </button>
+                                        <div class="status online">
+                                                <span class="pulse-ring"></span>
+                                                <span class="pulse-dot"></span>
+                                                <p id="txt-indicator" class="p-ind">Running...</p>
+                                        </div>
+                                </div>
 
-				<div class="group">
-					<button id="btn-mode-draw" class="btn active">Draw</button>
-					<button id="btn-mode-edit" class="btn">Edit</button>
-				</div>
+                                <div class="group">
+                                        <button id="btn-mode-draw" class="btn active">Draw</button>
+                                        <button id="btn-mode-edit" class="btn">Edit</button>
+                                </div>
 
-				<div class="group">
-					<button id="btn-undo" class="btn icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo">
-						<i data-lucide="undo-2"></i>
-					</button>
-					<button id="btn-redo" class="btn icon-btn" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" aria-label="Redo">
-						<i data-lucide="redo-2"></i>
-					</button>
-				</div>
+                                <div class="group">
+                                        <button id="btn-undo" class="btn icon-btn" title="Undo (Ctrl+Z)" aria-label="Undo">
+                                                <i data-lucide="undo-2"></i>
+                                        </button>
+                                        <button id="btn-redo" class="btn icon-btn" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" aria-label="Redo">
+                                                <i data-lucide="redo-2"></i>
+                                        </button>
+                                </div>
 
-				<div class="group">
-					<button id="btn-line" class="btn active">Line</button>
-					<button id="btn-curve" class="btn">Curve</button>
-					<button id="btn-spline" class="btn">Spline</button>
-				</div>
-			</div>
-			<div id="curve-feedback" class="mode-hint">Curve mode: place end point</div>
+                                <div id="segment-group" class="group">
+                                        <button id="btn-line" class="btn active">Line</button>
+                                        <button id="btn-curve" class="btn">Curve</button>
+                                        <button id="btn-spline" class="btn">Spline</button>
+                                </div>
+                        </div>
+                        <div id="curve-feedback" class="mode-hint">Curve mode: place end point</div>
 
-			<canvas id="ctx" width="600" height="600"></canvas>
-		</div>
+                        <canvas id="ctx" width="600" height="600"></canvas>
+                </div>
 
-		<div class="sidebar">
-			<div class="sidebar-section">
-				<h3>Current Robot Position</h3>
-				<div id="robot-pos-display" class="mono-text">X: 0.00 Y: 0.00 Heading: 0°</div>
-			</div>
-			<div class="sidebar-section">
-				<h3>Path Stats</h3>
-				<div id="path-length" class="mono-text">Path: 0.00 in</div>
-				<div id="path-time" class="mono-text">Est. Time: 0.00 s</div>
-				<div id="path-delay" class="mono-text">Delay: 0.00 s</div>
-			</div>
+                <div class="sidebar">
+                        <div class="sidebar-section">
+                                <h3>Current Robot Position</h3>
+                                <div id="robot-pos-display" class="mono-text">X: 0.00 Y: 0.00 Heading: 0°</div>
+                        </div>
+                        <div class="sidebar-section">
+                                <h3>Path Stats</h3>
+                                <div id="path-length" class="mono-text">Path: 0.00 in</div>
+                                <div id="path-time" class="mono-text">Est. Time: 0.00 s</div>
+                                <div id="path-delay" class="mono-text">Delay: 0.00 s</div>
+                        </div>
 
-			<div class="sidebar-section">
-				<h3>Starting Point <span>(Start Pose)</span></h3>
-				<div class="input-row">
-					<div class="input-group">
-						<label>X:</label>
-						<input type="number" id="start-x" class="input" step="1">
-					</div>
-					<div class="input-group">
-						<label>Y:</label>
-						<input type="number" id="start-y" class="input" step="1">
-					</div>
-					<div class="input-group">
-						<label>Heading:</label>
-						<input type="number" id="start-h" class="input" step="1">
-					</div>
-				</div>
-			</div>
+                        <div class="sidebar-section">
+                                <h3>Starting Point <span>(Start Pose)</span></h3>
+                                <div class="input-row">
+                                        <div class="input-group">
+                                                <label>X:</label>
+                                                <input type="number" id="start-x" class="input" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                                <label>Y:</label>
+                                                <input type="number" id="start-y" class="input" step="1">
+                                        </div>
+                                        <div class="input-group">
+                                                <label>Heading:</label>
+                                                <input type="number" id="start-h" class="input" step="1">
+                                        </div>
+                                </div>
+                        </div>
 
-			<div class="sidebar-section">
-				<h3 style="display: flex; justify-content: space-between; align-items: center;">
-					Path Points
-					<div>
-						<button id="btn-add-delay" class="btn-icon icon-btn" style="margin-right: 8px;" title="Add Delay" aria-label="Add Delay">
-							<i data-lucide="clock-3"></i>
-						</button>
-						<button id="btn-clear" class="btn-icon icon-btn" title="Clear Path" aria-label="Clear Path">
-							<i data-lucide="trash-2"></i>
-						</button>
-					</div>
-				</h3>
-				<div id="path-blocks">
-				</div>
-			</div>
-		</div>
-	</div>
+                        <div class="sidebar-section">
+                                <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                                        Path Points
+                                        <div>
+                                                <button id="btn-add-delay" class="btn-icon icon-btn" style="margin-right: 8px;" title="Add Delay" aria-label="Add Delay">
+                                                        <i data-lucide="clock-3"></i>
+                                                </button>
+                                                <button id="btn-clear" class="btn-icon icon-btn" title="Clear Path" aria-label="Clear Path">
+                                                        <i data-lucide="trash-2"></i>
+                                                </button>
+                                        </div>
+                                </h3>
+                                <div id="path-blocks">
+                                </div>
+                        </div>
+                </div>
+        </div>
 
-	<script type="module" src="scripts/main.js"></script>
+        <script type="module" src="scripts/main.js"></script>
 
 </body>
 
