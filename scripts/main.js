@@ -4,6 +4,7 @@ import { draw, generatePath, drawRobot, toInch, toPix } from "./draw.js";
 import { updRobot } from "./animate.js";
 import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from "./config.js";
 import { klona } from "klona";
+import Sortable from "sortablejs";
 
 const canvas = document.getElementById("ctx");
 const ctx = canvas.getContext("2d");
@@ -353,7 +354,6 @@ function renderSidebarBlocks() {
     waypoints.forEach((wp, index) => {
         const block = document.createElement("div");
         block.className = `path-block ${wp.type === "delay" ? "delay-block" : ""}`;
-        block.draggable = true;
         block.dataset.index = index;
 
         let label = wpLabels[index];
@@ -410,28 +410,6 @@ function renderSidebarBlocks() {
 `;
         }
 
-        //setup drag events
-        block.addEventListener("dragstart", (e) => {
-            block.classList.add("dragging");
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", index);
-        });
-
-        block.addEventListener("dragend", () => {
-            block.classList.remove("dragging");
-            snapshot();
-
-            const newWaypoints = [];
-            document.querySelectorAll(".path-block").forEach((b) => {
-                const originalIdx = parseInt(b.dataset.index, 10);
-                newWaypoints.push(waypoints[originalIdx]);
-            });
-
-            waypoints = newWaypoints;
-            updatePath();
-            renderSidebarBlocks();
-        });
-
         pathBlocksContainer.appendChild(block);
     });
 
@@ -439,35 +417,19 @@ function renderSidebarBlocks() {
     refreshIcons();
 }
 
-// allows dropping between blocks in the container
-pathBlocksContainer.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    const draggingBlock = document.querySelector(".dragging");
-    if (!draggingBlock) return;
-
-    const afterElement = getDragAfterElement(pathBlocksContainer, e.clientY);
-    if (afterElement == null) {
-        pathBlocksContainer.appendChild(draggingBlock);
-    } else {
-        pathBlocksContainer.insertBefore(draggingBlock, afterElement);
-    }
+Sortable.create(pathBlocksContainer, {
+    animation: 150,
+    chosenClass: "dragging",
+    onEnd: (e) => {
+        if (e.oldIndex === e.newIndex) return;
+        snapshot();
+        const moved = waypoints.splice(e.oldIndex, 1)[0];
+        waypoints.splice(e.newIndex, 0, moved);
+        updatePath();
+        renderSidebarBlocks();
+    },
 });
 
-function getDragAfterElement(container, y) {
-    const draggableElements = [
-        ...container.querySelectorAll(".path-block:not(.dragging)"),
-    ];
-    return draggableElements.reduce(
-        (closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset)
-                return { offset: offset, element: child };
-            else return closest;
-        },
-        { offset: Number.NEGATIVE_INFINITY },
-    ).element;
-}
 
 document.getElementById("btn-add-delay").addEventListener("click", () => {
     snapshot();

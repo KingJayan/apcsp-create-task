@@ -17,13 +17,13 @@ name = "Serve static"
 mode = "parallel"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "static-web-server -w ./.config/static-web-server.toml"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "static-web-server --port 5000 --root ."
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Project"

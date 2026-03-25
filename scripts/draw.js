@@ -1,6 +1,7 @@
 // draw.js
 import { FIELD_SIZE, CANVAS_SIZE, LINE_RESOLUTION, CURVE_STEPS, SPLINE_STEPS } from './config.js';
 import { lerpAngle } from './utils.js';
+import { CurveInterpolator } from 'curve-interpolator';
 import { Bezier } from 'bezier-js';
 
 const SCALE = CANVAS_SIZE / FIELD_SIZE;//~4.16 ppi
@@ -140,32 +141,45 @@ export function generatePath(allNodes) {
             }
         }
         else if (mode === "spline") {
-            let pt0 = allNodes[i - 2] || p0; //pt before
-            let pt1 = p0;//start sgmt
-            let pt2 = currNode; //end sgmt
-            let pt3 = allNodes[i + 1] || pt2;//pt after
-
-            const steps = SPLINE_STEPS;
-            for (let s = 1; s <= steps; s++) {
-                let t = s / steps;
-                let t2 = t ** 2;
-                let t3 = t2 * t;
-
-                //catmull-rom formula adapted for piecewise sgmts
-                let x = 0.5 * (2 * pt1.x + (-pt0.x + pt2.x) * t + (2 * pt0.x - 5 * pt1.x + 4 * pt2.x - pt3.x) * t2 + (-pt0.x + 3 * pt1.x - 3 * pt2.x + pt3.x) * t3);
-                let y = 0.5 * (2 * pt1.y + (-pt0.y + pt2.y) * t + (2 * pt0.y - 5 * pt1.y + 4 * pt2.y - pt3.y) * t2 + (-pt0.y + 3 * pt1.y - 3 * pt2.y + pt3.y) * t3);
-
-                let heading = pt1.heading; //constant
-                if (hType === "linear") heading = lerpAngle(pt1.heading, pt2.heading, t);
-                else if (hType === "tangential") {
-                    if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
-                    else heading = lastHeading;
-                }
-
-                path.push({ x, y, heading, mode: "spline" });
-                prevX = x; prevY = y; lastHeading = heading;
+            // collect all contiguous spline nodes into one run
+            let splineWps = [allNodes[i - 1]]; // include anchor (previous endpoint)
+            while (i < allNodes.length && allNodes[i].mode === "spline") {
+                splineWps.push(allNodes[i]);
+                i++;
             }
-            i++;
+
+            if (splineWps.length >= 2) {
+                const points = splineWps.map(n => [n.x, n.y]);
+                const ci = new CurveInterpolator(points, { tension: 0 });
+                const totalSteps = (splineWps.length - 1) * SPLINE_STEPS;
+                const lut = ci.getPoints(totalSteps); // returns totalSteps+1 pts
+
+                for (let s = 1; s < lut.length; s++) {
+                    let globalFrac = s / (lut.length - 1);
+                    let x = lut[s][0];
+                    let y = lut[s][1];
+
+                    // map global fraction to per-segment heading interp
+                    let segFloat = globalFrac * (splineWps.length - 1);
+                    let segIdx = Math.min(Math.floor(segFloat), splineWps.length - 2);
+                    let localT = segFloat - segIdx;
+
+                    let segStart = splineWps[segIdx];
+                    let segEnd = splineWps[segIdx + 1];
+                    let segHType = segEnd.headingInterp || 'linear';
+
+                    let heading = segStart.heading;
+                    if (segHType === 'linear') heading = lerpAngle(segStart.heading, segEnd.heading, localT);
+                    else if (segHType === 'tangential') {
+                        if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
+                        else heading = lastHeading;
+                    }
+
+                    path.push({ x, y, heading, mode: "spline" });
+                    prevX = x; prevY = y; lastHeading = heading;
+                }
+            }
+            // i already advanced by the while loop above
         }
     }
     return path;
