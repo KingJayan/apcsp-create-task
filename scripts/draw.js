@@ -1,6 +1,7 @@
 // draw.js
 import { FIELD_SIZE, CANVAS_SIZE, LINE_RESOLUTION, CURVE_STEPS, SPLINE_STEPS } from './config.js';
 import { lerpAngle } from './utils.js';
+import { Bezier } from 'bezier-js';
 
 const SCALE = CANVAS_SIZE / FIELD_SIZE;//~4.16 ppi
  
@@ -117,21 +118,23 @@ export function generatePath(allNodes) {
                 i += p3 ? 3 : (c2 ? 2 : 1);
             } else {
                 // cubic bezier: p0 (anchor), c1, c2, p3 (end)
-                const steps = CURVE_STEPS;
-                for (let t = 1 / steps; t <= 1; t += 1 / steps) {
-                    let mt = 1 - t;
-                    let x = mt ** 3 * p0.x + 3 * mt ** 2 * t * c1.x + 3 * mt * t ** 2 * c2.x + t ** 3 * p3.x;
-                    let y = mt ** 3 * p0.y + 3 * mt ** 2 * t * c1.y + 3 * mt * t ** 2 * c2.y + t ** 3 * p3.y;
+                const curve = new Bezier(p0.x, p0.y, c1.x, c1.y, c2.x, c2.y, p3.x, p3.y);
+                const lut = curve.getLUT(CURVE_STEPS);
+                //arc-len parameterized pts
+                for (let s=1; s<lut.length; s++) {
+                    let t = s/(lut.length - 1);
+                    let x = lut[s].x;
+                    let y = lut[s].y;
 
-                    let heading = p0.heading;
+                    let heading = p0.heading; //constant
                     if (hType === "linear") heading = lerpAngle(p0.heading, p3.heading, t);
                     else if (hType === "tangential") {
                         if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
                         else heading = lastHeading;
                     }
-
                     path.push({ x, y, heading, mode: "curve" });
-                    prevX = x; prevY = y; lastHeading = heading;
+                    prevX = x; prevY = y;
+                    lastHeading = heading;
                 }
                 i += 3;
             }

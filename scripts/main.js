@@ -1,14 +1,14 @@
 //main.js
 
-import { draw, generatePath, drawRobot, toInch, toPix } from './draw.js';
-import { updRobot } from './animate.js';
-import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from './config.js';
-import { klona } from 'klona';
+import { draw, generatePath, drawRobot, toInch, toPix } from "./draw.js";
+import { updRobot } from "./animate.js";
+import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from "./config.js";
+import { klona } from "klona";
 
 const canvas = document.getElementById("ctx");
 const ctx = canvas.getContext("2d");
 
-//state vars 
+//state vars
 const startPose = { x: -48, y: -48, heading: 90 };
 let waypoints = []; //user pts
 let pathArray = []; //array to calc path
@@ -19,7 +19,7 @@ const robot = {
     speed: ROBOT_SPEED,
     isMoving: false,
     t: 0, //curr index in path[]
-    size: ROBOT_SIZE
+    size: ROBOT_SIZE,
 };
 
 let currState = "stopped";
@@ -31,20 +31,20 @@ let mouse = { x: 0, y: 0 };
 let isDirty = true; //canvas needs redraw
 
 //toolbar UI elements
-const startBtn = document.getElementById('btn-start');
-const stopBtn = document.getElementById('btn-stop');
-const undoBtn = document.getElementById('btn-undo');
-const redoBtn = document.getElementById('btn-redo');
+const startBtn = document.getElementById("btn-start");
+const stopBtn = document.getElementById("btn-stop");
+const undoBtn = document.getElementById("btn-undo");
+const redoBtn = document.getElementById("btn-redo");
 const modeButtons = {
-    line: document.getElementById('btn-line'),
-    curve: document.getElementById('btn-curve'),
-    spline: document.getElementById('btn-spline')
+    line: document.getElementById("btn-line"),
+    curve: document.getElementById("btn-curve"),
+    spline: document.getElementById("btn-spline"),
 };
 
 //draw vs edit toggle
-const drawModeBtn = document.getElementById('btn-mode-draw');
-const editModeBtn = document.getElementById('btn-mode-edit');
-const segmentGroup = document.getElementById('segment-group');
+const drawModeBtn = document.getElementById("btn-mode-draw");
+const editModeBtn = document.getElementById("btn-mode-edit");
+const segmentGroup = document.getElementById("segment-group");
 
 let isEditMode = false; //false = draw, true = edit
 
@@ -68,7 +68,7 @@ let redoStack = [];
 const HISTORY_LIMIT = 200;
 
 function refreshIcons() {
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
         window.lucide.createIcons();
     }
 }
@@ -112,11 +112,11 @@ function updatePathStats() {
     for (let i = 1; i < pathArray.length; i++) {
         let p0 = pathArray[i - 1];
         let p1 = pathArray[i];
-        if (p1.type === 'delay') {
+        if (p1.type === "delay") {
             delayMs += p1.ms || 0;
             continue;
         }
-        if (p0.type === 'delay') continue;
+        if (p0.type === "delay") continue;
         distIn += Math.hypot(p1.x - p0.x, p1.y - p0.y);
     }
 
@@ -124,34 +124,39 @@ function updatePathStats() {
     const delaySecs = delayMs / 1000;
     const totalSecs = driveSecs + delaySecs;
 
-    if (pathLengthDisplay) pathLengthDisplay.innerText = `Path: ${distIn.toFixed(2)} in`;
-    if (pathTimeDisplay) pathTimeDisplay.innerText = `Est. Time: ${totalSecs.toFixed(2)} s`;
-    if (pathDelayDisplay) pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
+    if (pathLengthDisplay)
+        pathLengthDisplay.innerText = `Path: ${distIn.toFixed(2)} in`;
+    if (pathTimeDisplay)
+        pathTimeDisplay.innerText = `Est. Time: ${totalSecs.toFixed(2)} s`;
+    if (pathDelayDisplay)
+        pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
 }
 
 drawModeBtn.addEventListener("click", () => setWhichMode(false));
 editModeBtn.addEventListener("click", () => setWhichMode(true));
 
-if (undoBtn) undoBtn.addEventListener('click', undo);
-if (redoBtn) redoBtn.addEventListener('click', redo);
+if (undoBtn) undoBtn.addEventListener("click", undo);
+if (redoBtn) redoBtn.addEventListener("click", redo);
 
 //sidebar UI elements
-const startXInput = document.getElementById('start-x');
-const startYInput = document.getElementById('start-y');
-const startHInput = document.getElementById('start-h');
-const pathBlocksContainer = document.getElementById('path-blocks');
-const robotPosDisplay = document.getElementById('robot-pos-display');
-const pathLengthDisplay = document.getElementById('path-length');
-const pathTimeDisplay = document.getElementById('path-time');
-const pathDelayDisplay = document.getElementById('path-delay');
-const curveFeedback = document.getElementById('curve-feedback');
+const startXInput = document.getElementById("start-x");
+const startYInput = document.getElementById("start-y");
+const startHInput = document.getElementById("start-h");
+const pathBlocksContainer = document.getElementById("path-blocks");
+const robotPosDisplay = document.getElementById("robot-pos-display");
+const pathLengthDisplay = document.getElementById("path-length");
+const pathTimeDisplay = document.getElementById("path-time");
+const pathDelayDisplay = document.getElementById("path-delay");
+const curveFeedback = document.getElementById("curve-feedback");
 
-document.addEventListener('pointermove', (e) => {
-    const surface = e.target.closest('.group, .sidebar, .path-block, .input-group, .status, .mode-hint');
+document.addEventListener("pointermove", (e) => {
+    const surface = e.target.closest(
+        ".group, .sidebar, .path-block, .input-group, .status, .mode-hint",
+    );
     if (!surface) return;
     const rect = surface.getBoundingClientRect();
-    surface.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-    surface.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    surface.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    surface.style.setProperty("--my", `${e.clientY - rect.top}px`);
 });
 
 //init start pose inputs
@@ -160,8 +165,8 @@ startYInput.value = startPose.y;
 startHInput.value = startPose.heading;
 
 //listen for startpose input changes
-[startXInput, startYInput, startHInput].forEach(input => {
-    input.addEventListener('input', () => {
+[startXInput, startYInput, startHInput].forEach((input) => {
+    input.addEventListener("input", () => {
         startPose.x = parseFloat(startXInput.value) || 0;
         startPose.y = parseFloat(startYInput.value) || 0;
         startPose.heading = parseFloat(startHInput.value) || 0;
@@ -183,28 +188,28 @@ function buildWpLabels() {
     let i = 0;
     while (i < waypoints.length) {
         let wp = waypoints[i];
-        if (wp.type === 'delay') {
-            wpLabels[i] = 'Wait Action';
+        if (wp.type === "delay") {
+            wpLabels[i] = "Wait Action";
             i++;
-        } else if (wp.mode === 'curve') {
+        } else if (wp.mode === "curve") {
             let c2 = waypoints[i + 1];
             let endPt = waypoints[i + 2];
-            wpLabels[i] = 'Curve Control 1';
-            if (c2 && c2.type !== 'delay' && endPt && endPt.type !== 'delay') {
-                wpLabels[i + 1] = 'Curve Control 2';
-                wpLabels[i + 2] = 'Curve End Pt';
+            wpLabels[i] = "Curve Control 1";
+            if (c2 && c2.type !== "delay" && endPt && endPt.type !== "delay") {
+                wpLabels[i + 1] = "Curve Control 2";
+                wpLabels[i + 2] = "Curve End Pt";
                 i += 3;
-            } else if (c2 && c2.type !== 'delay') {
-                wpLabels[i + 1] = 'Curve Control 2';
+            } else if (c2 && c2.type !== "delay") {
+                wpLabels[i + 1] = "Curve Control 2";
                 i += 2;
             } else {
                 i++;
             }
-        } else if (wp.mode === 'spline') {
-            wpLabels[i] = 'Spline Node';
+        } else if (wp.mode === "spline") {
+            wpLabels[i] = "Spline Node";
             i++;
         } else {
-            wpLabels[i] = 'Line Endpoint';
+            wpLabels[i] = "Line Endpoint";
             i++;
         }
     }
@@ -213,71 +218,74 @@ function buildWpLabels() {
 
 //attach event listeners after a full rebuild
 function attachSidebarListeners() {
-    document.querySelectorAll('.wp-x').forEach(input => {
-        input.addEventListener('change', (e) => {
+    document.querySelectorAll(".wp-x").forEach((input) => {
+        input.addEventListener("change", (e) => {
             snapshot();
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].x = parseFloat(e.target.value) || 0;
             updatePath();
         });
-        input.addEventListener('input', (e) => {
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].x = parseFloat(e.target.value) || 0;
             updatePath();
         });
     });
-    document.querySelectorAll('.wp-y').forEach(input => {
-        input.addEventListener('change', (e) => {
+    document.querySelectorAll(".wp-y").forEach((input) => {
+        input.addEventListener("change", (e) => {
             snapshot();
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].y = parseFloat(e.target.value) || 0;
             updatePath();
         });
-        input.addEventListener('input', (e) => {
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].y = parseFloat(e.target.value) || 0;
             updatePath();
         });
     });
-    document.querySelectorAll('.wp-h').forEach(input => {
-        input.addEventListener('change', (e) => {
+    document.querySelectorAll(".wp-h").forEach((input) => {
+        input.addEventListener("change", (e) => {
             snapshot();
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].heading = parseFloat(e.target.value) || 0;
             updatePath();
         });
-        input.addEventListener('input', (e) => {
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].heading = parseFloat(e.target.value) || 0;
             updatePath();
         });
     });
-    document.querySelectorAll('.wp-delay').forEach(input => {
-        input.addEventListener('change', (e) => {
+    document.querySelectorAll(".wp-delay").forEach((input) => {
+        input.addEventListener("change", (e) => {
             snapshot();
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].ms = parseInt(e.target.value, 10) || 0;
             updatePath();
         });
-        input.addEventListener('input', (e) => {
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].ms = parseInt(e.target.value, 10) || 0;
             updatePath();
         });
     });
-    document.querySelectorAll('.wp-interp').forEach(select => {
-        select.addEventListener('change', (e) => {
+    document.querySelectorAll(".wp-interp").forEach((select) => {
+        select.addEventListener("change", (e) => {
             snapshot();
-            const idx = parseInt(e.target.getAttribute('data-index'), 10);
+            const idx = parseInt(e.target.getAttribute("data-index"), 10);
             waypoints[idx].headingInterp = e.target.value;
             updatePath();
             renderSidebarBlocks();
         });
     });
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
             snapshot();
-            const idx = parseInt(e.currentTarget.getAttribute('data-index'), 10);
+            const idx = parseInt(
+                e.currentTarget.getAttribute("data-index"),
+                10,
+            );
             waypoints.splice(idx, 1);
             updatePath();
             renderSidebarBlocks();
@@ -287,59 +295,74 @@ function attachSidebarListeners() {
 
 //upd the list of pts — updates in place if structure matches, full rebuild otherwise
 function renderSidebarBlocks() {
-    const existingBlocks = [...pathBlocksContainer.querySelectorAll('.path-block')];
+    const existingBlocks = [
+        ...pathBlocksContainer.querySelectorAll(".path-block"),
+    ];
 
     //check if structure matches: same count, same order of types, correct indices
-    const structureMatches = existingBlocks.length === waypoints.length &&
+    const structureMatches =
+        existingBlocks.length === waypoints.length &&
         existingBlocks.every((b, i) => {
             const wp = waypoints[i];
-            const blockIsDelay = b.classList.contains('delay-block');
-            const wpIsDelay = wp.type === 'delay';
-            return parseInt(b.dataset.index, 10) === i && blockIsDelay === wpIsDelay;
+            const blockIsDelay = b.classList.contains("delay-block");
+            const wpIsDelay = wp.type === "delay";
+            return (
+                parseInt(b.dataset.index, 10) === i &&
+                blockIsDelay === wpIsDelay
+            );
         });
 
     if (structureMatches) {
         //in-place update: just refresh values without touching the DOM structure
         waypoints.forEach((wp, index) => {
             const block = existingBlocks[index];
-            if (wp.type === 'delay') {
-                const delayInput = block.querySelector('.wp-delay');
-                if (delayInput && document.activeElement !== delayInput) delayInput.value = wp.ms || 1000;
+            if (wp.type === "delay") {
+                const delayInput = block.querySelector(".wp-delay");
+                if (delayInput && document.activeElement !== delayInput)
+                    delayInput.value = wp.ms || 1000;
             } else {
-                const xInput = block.querySelector('.wp-x');
-                const yInput = block.querySelector('.wp-y');
-                const hInput = block.querySelector('.wp-h');
-                const interpSelect = block.querySelector('.wp-interp');
-                if (xInput && document.activeElement !== xInput) xInput.value = Math.round(wp.x);
-                if (yInput && document.activeElement !== yInput) yInput.value = Math.round(wp.y);
-                if (hInput && document.activeElement !== hInput) hInput.value = Math.round(wp.heading);
-                if (interpSelect && document.activeElement !== interpSelect) interpSelect.value = wp.headingInterp || 'linear';
+                const xInput = block.querySelector(".wp-x");
+                const yInput = block.querySelector(".wp-y");
+                const hInput = block.querySelector(".wp-h");
+                const interpSelect = block.querySelector(".wp-interp");
+                if (xInput && document.activeElement !== xInput)
+                    xInput.value = Math.round(wp.x);
+                if (yInput && document.activeElement !== yInput)
+                    yInput.value = Math.round(wp.y);
+                if (hInput && document.activeElement !== hInput)
+                    hInput.value = Math.round(wp.heading);
+                if (interpSelect && document.activeElement !== interpSelect)
+                    interpSelect.value = wp.headingInterp || "linear";
 
                 //update the muted class on the heading input group
-                const isHeadingMuted = wp.headingInterp && wp.headingInterp !== 'linear';
-                if (hInput) hInput.closest('.input-group').classList.toggle('muted', isHeadingMuted);
+                const isHeadingMuted =
+                    wp.headingInterp && wp.headingInterp !== "linear";
+                if (hInput)
+                    hInput
+                        .closest(".input-group")
+                        .classList.toggle("muted", isHeadingMuted);
             }
         });
         return;
     }
 
     //full rebuild
-    pathBlocksContainer.innerHTML = '';
+    pathBlocksContainer.innerHTML = "";
     const wpLabels = buildWpLabels();
 
     waypoints.forEach((wp, index) => {
-        const block = document.createElement('div');
-        block.className = `path-block ${wp.type === 'delay' ? 'delay-block' : ''}`;
+        const block = document.createElement("div");
+        block.className = `path-block ${wp.type === "delay" ? "delay-block" : ""}`;
         block.draggable = true;
         block.dataset.index = index;
 
         let label = wpLabels[index];
         let tagColor = "#a1a1aa";
-        if (wp.mode === 'line') tagColor = "#06b6d4";
-        if (wp.mode === 'curve') tagColor = "#a855f7";
-        if (wp.mode === 'spline') tagColor = "#10b981";
+        if (wp.mode === "line") tagColor = "#06b6d4";
+        if (wp.mode === "curve") tagColor = "#a855f7";
+        if (wp.mode === "spline") tagColor = "#10b981";
 
-        if (wp.type === 'delay') {
+        if (wp.type === "delay") {
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:#f59e0b; font-weight:normal;">${label}</span></span>
@@ -353,7 +376,8 @@ function renderSidebarBlocks() {
 </div>
 `;
         } else {
-            const isHeadingMuted = wp.headingInterp && wp.headingInterp !== 'linear';
+            const isHeadingMuted =
+                wp.headingInterp && wp.headingInterp !== "linear";
             block.innerHTML = `
 <div class="path-block-header">
     <span>${index + 1}. <span style="color:${tagColor}; font-weight:normal;">${label}</span></span>
@@ -368,7 +392,7 @@ function renderSidebarBlocks() {
     <label>Y:</label>
     <input type="number" class="input wp-y" data-index="${index}" value="${Math.round(wp.y)}">
 </div>
-<div class="input-group${isHeadingMuted ? ' muted' : ''}">
+<div class="input-group${isHeadingMuted ? " muted" : ""}">
     <label>H°:</label>
     <input type="number" class="input wp-h" data-index="${index}" value="${Math.round(wp.heading)}">
 </div>
@@ -377,9 +401,9 @@ function renderSidebarBlocks() {
     <div class="input-group">
         <label>Heading Interp:</label>
         <select class="custom-select wp-interp" data-index="${index}">
-            <option value="linear" ${wp.headingInterp === 'linear' || !wp.headingInterp ? 'selected' : ''}>Linear</option>
-            <option value="tangential" ${wp.headingInterp === 'tangential' ? 'selected' : ''}>Tangential</option>
-            <option value="constant" ${wp.headingInterp === 'constant' ? 'selected' : ''}>Constant</option>
+            <option value="linear" ${wp.headingInterp === "linear" || !wp.headingInterp ? "selected" : ""}>Linear</option>
+            <option value="tangential" ${wp.headingInterp === "tangential" ? "selected" : ""}>Tangential</option>
+            <option value="constant" ${wp.headingInterp === "constant" ? "selected" : ""}>Constant</option>
         </select>
     </div>
 </div>
@@ -387,18 +411,18 @@ function renderSidebarBlocks() {
         }
 
         //setup drag events
-        block.addEventListener('dragstart', (e) => {
-            block.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', index);
+        block.addEventListener("dragstart", (e) => {
+            block.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", index);
         });
 
-        block.addEventListener('dragend', () => {
-            block.classList.remove('dragging');
+        block.addEventListener("dragend", () => {
+            block.classList.remove("dragging");
             snapshot();
 
             const newWaypoints = [];
-            document.querySelectorAll('.path-block').forEach(b => {
+            document.querySelectorAll(".path-block").forEach((b) => {
                 const originalIdx = parseInt(b.dataset.index, 10);
                 newWaypoints.push(waypoints[originalIdx]);
             });
@@ -416,9 +440,9 @@ function renderSidebarBlocks() {
 }
 
 // allows dropping between blocks in the container
-pathBlocksContainer.addEventListener('dragover', (e) => {
+pathBlocksContainer.addEventListener("dragover", (e) => {
     e.preventDefault();
-    const draggingBlock = document.querySelector('.dragging');
+    const draggingBlock = document.querySelector(".dragging");
     if (!draggingBlock) return;
 
     const afterElement = getDragAfterElement(pathBlocksContainer, e.clientY);
@@ -430,23 +454,29 @@ pathBlocksContainer.addEventListener('dragover', (e) => {
 });
 
 function getDragAfterElement(container, y) {
-    const draggableElements = [...container.querySelectorAll('.path-block:not(.dragging)')];
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-        else return closest;
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
+    const draggableElements = [
+        ...container.querySelectorAll(".path-block:not(.dragging)"),
+    ];
+    return draggableElements.reduce(
+        (closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset)
+                return { offset: offset, element: child };
+            else return closest;
+        },
+        { offset: Number.NEGATIVE_INFINITY },
+    ).element;
 }
 
-document.getElementById('btn-add-delay').addEventListener('click', () => {
+document.getElementById("btn-add-delay").addEventListener("click", () => {
     snapshot();
-    waypoints.push({ type: 'delay', ms: 1000 });
+    waypoints.push({ type: "delay", ms: 1000 });
     updatePath();
     renderSidebarBlocks();
 });
 
-document.getElementById('btn-clear').addEventListener('click', () => {
+document.getElementById("btn-clear").addEventListener("click", () => {
     if (waypoints.length === 0) return;
     snapshot();
     waypoints = [];
@@ -455,9 +485,12 @@ document.getElementById('btn-clear').addEventListener('click', () => {
     renderNow();
 });
 
-
-document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === "SELECT" || e.target.tagName === "OPTION" || e.target.tagName === "INPUT") {
+document.addEventListener("keydown", (e) => {
+    if (
+        e.target.tagName === "SELECT" ||
+        e.target.tagName === "OPTION" ||
+        e.target.tagName === "INPUT"
+    ) {
         return;
     }
     if (e.key === " ") {
@@ -482,7 +515,10 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === "z") {
         e.preventDefault();
         undo();
-    } else if ((e.ctrlKey && e.key === "y") || (e.ctrlKey && e.shiftKey && e.key === "Z")) {
+    } else if (
+        (e.ctrlKey && e.key === "y") ||
+        (e.ctrlKey && e.shiftKey && e.key === "Z")
+    ) {
         e.preventDefault();
         redo();
     }
@@ -494,15 +530,15 @@ function updatePath() {
     const drawPose = {
         ...startPose,
         heading: startPose.heading * (Math.PI / 180),
-        mode: 'start',
-        type: 'waypoint'
+        mode: "start",
+        type: "waypoint",
     };
 
     let finalPath = [];
     let currentChunk = [drawPose];
 
-    waypoints.forEach(wp => {
-        if (wp.type === 'delay') {
+    waypoints.forEach((wp) => {
+        if (wp.type === "delay") {
             // generate physics nodes for everything before the delay
             if (currentChunk.length > 1) {
                 let chunkPath = generatePath(currentChunk);
@@ -512,13 +548,21 @@ function updatePath() {
             }
 
             // inject a 0-distance wait node holding the last known state
-            let lastP = finalPath.length > 0 ? finalPath[finalPath.length - 1] : drawPose;
-            finalPath.push({ ...lastP, type: 'delay', ms: wp.ms || 1000, mode: lastP.mode });
+            let lastP =
+                finalPath.length > 0
+                    ? finalPath[finalPath.length - 1]
+                    : drawPose;
+            finalPath.push({
+                ...lastP,
+                type: "delay",
+                ms: wp.ms || 1000,
+                mode: lastP.mode,
+            });
         } else {
             currentChunk.push({
                 ...wp,
                 heading: wp.heading * (Math.PI / 180),
-                type: 'waypoint'
+                type: "waypoint",
             });
         }
     });
@@ -545,13 +589,16 @@ function getPendingCurve() {
     let i = 0;
     while (i < waypoints.length) {
         let wp = waypoints[i];
-        if (wp.type === 'delay') { i++; continue; }
+        if (wp.type === "delay") {
+            i++;
+            continue;
+        }
 
-        if (wp.mode === 'curve') {
+        if (wp.mode === "curve") {
             let c2 = waypoints[i + 1];
             let endPt = waypoints[i + 2];
-            const c2ok = c2 && c2.type !== 'delay';
-            const endOk = endPt && endPt.type !== 'delay';
+            const c2ok = c2 && c2.type !== "delay";
+            const endOk = endPt && endPt.type !== "delay";
 
             if (c2ok && endOk) {
                 anchor = endPt; // complete cubic — advance
@@ -571,8 +618,8 @@ function getPendingCurve() {
 
 //visual indicator helper
 function updateIndicator() {
-    const indicatorText = document.getElementById('txt-indicator');
-    const statusContainer = document.querySelector('.status');
+    const indicatorText = document.getElementById("txt-indicator");
+    const statusContainer = document.querySelector(".status");
 
     if (indicatorText && statusContainer) {
         if (currState === "running") {
@@ -584,7 +631,6 @@ function updateIndicator() {
         }
     }
 }
-
 
 //btn listeners
 startBtn.addEventListener("click", () => {
@@ -615,14 +661,13 @@ function setSgmtMode(newMode) {
     currMode = newMode;
 
     //switch active class
-    Object.values(modeButtons).forEach(btn => btn.classList.remove("active"));
+    Object.values(modeButtons).forEach((btn) => btn.classList.remove("active"));
     modeButtons[newMode].classList.add("active");
 }
 
 modeButtons.line.addEventListener("click", () => setSgmtMode("line"));
 modeButtons.curve.addEventListener("click", () => setSgmtMode("curve"));
 modeButtons.spline.addEventListener("click", () => setSgmtMode("spline"));
-
 
 //drag state vars
 let draggedIdx = null; // -1 for start, 0+ for wp
@@ -692,10 +737,13 @@ canvas.addEventListener("mousemove", (e) => {
             if (draggedIdx === -1) {
                 startPose.heading = angleDeg;
                 startHInput.value = angleDeg;
-                if (currState !== "running") robot.pose.heading = angleDeg * (Math.PI / 180);
+                if (currState !== "running")
+                    robot.pose.heading = angleDeg * (Math.PI / 180);
             } else {
                 waypoints[draggedIdx].heading = angleDeg;
-                let hInput = document.querySelector(`.wp-h[data-index="${draggedIdx}"]`);
+                let hInput = document.querySelector(
+                    `.wp-h[data-index="${draggedIdx}"]`,
+                );
                 if (hInput) hInput.value = angleDeg;
             }
         } else {
@@ -713,8 +761,12 @@ canvas.addEventListener("mousemove", (e) => {
                 waypoints[draggedIdx].x = inchPos.x;
                 waypoints[draggedIdx].y = inchPos.y;
 
-                let xInput = document.querySelector(`.wp-x[data-index="${draggedIdx}"]`);
-                let yInput = document.querySelector(`.wp-y[data-index="${draggedIdx}"]`);
+                let xInput = document.querySelector(
+                    `.wp-x[data-index="${draggedIdx}"]`,
+                );
+                let yInput = document.querySelector(
+                    `.wp-y[data-index="${draggedIdx}"]`,
+                );
                 if (xInput) xInput.value = Math.round(inchPos.x);
                 if (yInput) yInput.value = Math.round(inchPos.y);
             }
@@ -725,11 +777,16 @@ canvas.addEventListener("mousemove", (e) => {
             //hover effect only in edit mode
             let hovering = false;
             let spPix = toPix(startPose.x, startPose.y);
-            if (Math.hypot(mouse.x - spPix.x, mouse.y - spPix.y) < wpRad + 15) hovering = true;
+            if (Math.hypot(mouse.x - spPix.x, mouse.y - spPix.y) < wpRad + 15)
+                hovering = true;
             else {
                 for (let i = 0; i < waypoints.length; i++) {
                     let wpPix = toPix(waypoints[i].x, waypoints[i].y);
-                    if (Math.hypot(mouse.x - wpPix.x, mouse.y - wpPix.y) < wpRad + 15) hovering = true;
+                    if (
+                        Math.hypot(mouse.x - wpPix.x, mouse.y - wpPix.y) <
+                        wpRad + 15
+                    )
+                        hovering = true;
                 }
             }
             canvas.style.cursor = hovering ? "grab" : "default";
@@ -746,9 +803,19 @@ canvas.addEventListener("mouseup", (e) => {
     if (!isEditMode) {
         snapshot();
         const inchPos = toInch(mouse.x, mouse.y);
-        let lastHeading = waypoints.length > 0 ? waypoints[waypoints.length - 1].heading : startPose.heading;
+        let lastHeading =
+            waypoints.length > 0
+                ? waypoints[waypoints.length - 1].heading
+                : startPose.heading;
 
-        waypoints.push({ x: inchPos.x, y: inchPos.y, heading: lastHeading, mode: currMode, headingInterp: "linear", type: "waypoint" });
+        waypoints.push({
+            x: inchPos.x,
+            y: inchPos.y,
+            heading: lastHeading,
+            mode: currMode,
+            headingInterp: "linear",
+            type: "waypoint",
+        });
         updatePath();
         renderSidebarBlocks();
     }
@@ -756,7 +823,8 @@ canvas.addEventListener("mouseup", (e) => {
     pendingSnapshot = null; //discard if click without drag
     isDragging = false;
     draggedIdx = null;
-    if (currState !== "running") canvas.style.cursor = isEditMode ? "default" : "crosshair";
+    if (currState !== "running")
+        canvas.style.cursor = isEditMode ? "default" : "crosshair";
 });
 
 canvas.addEventListener("mouseleave", () => {
@@ -776,14 +844,25 @@ refreshIcons();
 function renderNow() {
     let curvePreview = null;
     let pendingCurve = null;
-    const shouldShowCurveHint = currState !== "running" && !isEditMode && currMode === "curve";
+    const shouldShowCurveHint =
+        currState !== "running" && !isEditMode && currMode === "curve";
     if (shouldShowCurveHint) {
         pendingCurve = getPendingCurve();
         if (pendingCurve) {
             const mouseInch = toInch(mouse.x, mouse.y);
             curvePreview = pendingCurve.control2
-                ? { anchor: pendingCurve.anchor, control1: pendingCurve.control1, control2: pendingCurve.control2, end: mouseInch }
-                : { anchor: pendingCurve.anchor, control1: pendingCurve.control1, control2: mouseInch, end: mouseInch };
+                ? {
+                      anchor: pendingCurve.anchor,
+                      control1: pendingCurve.control1,
+                      control2: pendingCurve.control2,
+                      end: mouseInch,
+                  }
+                : {
+                      anchor: pendingCurve.anchor,
+                      control1: pendingCurve.control1,
+                      control2: mouseInch,
+                      end: mouseInch,
+                  };
         }
     }
 
@@ -792,14 +871,21 @@ function renderNow() {
             curveFeedback.textContent = pendingCurve.control2
                 ? "Curve mode: place end point"
                 : "Curve mode: place control point 2";
-            curveFeedback.classList.add('show');
+            curveFeedback.classList.add("show");
         } else {
-            curveFeedback.classList.remove('show');
+            curveFeedback.classList.remove("show");
         }
     }
 
     //render everything
-    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, curvePreview);
+    draw(
+        ctx,
+        canvas,
+        [startPose, ...waypoints],
+        pathArray,
+        wpRad,
+        curvePreview,
+    );
     drawRobot(ctx, robot.pose, robot.size);
 }
 

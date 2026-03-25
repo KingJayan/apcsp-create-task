@@ -21,6 +21,7 @@
     "less": "^4.6.4"
   },
   "dependencies": {
+    "bezier-js": "^6.1.4",
     "klona": "^2.0.6"
   }
 }
