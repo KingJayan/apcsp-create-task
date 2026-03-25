@@ -6,7 +6,7 @@ import { Bezier } from 'bezier-js';
 
 const SCALE = CANVAS_SIZE / FIELD_SIZE;//~4.16 ppi
  
-//helper function
+//helper conversion functions
 export function toPix(inchX, inchY) {
     return {
         x: (inchX + 72) * SCALE,
@@ -21,7 +21,7 @@ export function toInch(pixX, pixY) {
     };
 }
 
-//draws the 6x6 tiled field 
+//draws the 6x6 tiled field as a bg to the canvas
 export function drawGrid(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setLineDash([]);
@@ -30,7 +30,7 @@ export function drawGrid(ctx, canvas) {
     ctx.strokeStyle = "#27272a";
     ctx.lineWidth = 1;
 
-    const tileSize = 24 * SCALE; //2ft per tile
+    const tileSize = 24 * SCALE; //2ft per tile to mimic field
 
     ctx.beginPath();
     for (let i = 0; i <= 6; i++) {
@@ -43,7 +43,7 @@ export function drawGrid(ctx, canvas) {
     }
     ctx.stroke();
 
-    //draw axes
+    //draw main axes bolder
     ctx.strokeStyle = "rgba(250, 250, 250, 0.1)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -54,14 +54,13 @@ export function drawGrid(ctx, canvas) {
     ctx.stroke();
 }
 
-//math extractor: gen the array of coords
+//math extractor: generate the array of coords
 export function generatePath(allNodes) {
     let path = [];
     if (allNodes.length < 2) return path;
 
     path.push({ x: allNodes[0].x, y: allNodes[0].y, heading: allNodes[0].heading, mode: 'start' });
 
-    //declare outside loop so tangency works across segments
     let prevX = allNodes[0].x;
     let prevY = allNodes[0].y;
     let lastHeading = allNodes[0].heading;
@@ -80,7 +79,9 @@ export function generatePath(allNodes) {
                 let x = p0.x + (currNode.x - p0.x) * t;
                 let y = p0.y + (currNode.y - p0.y) * t;
 
-                let heading = p0.heading; //constant
+                let heading = p0.heading;
+                
+                //handle heading modes
                 if (hType === "linear") heading = lerpAngle(p0.heading, currNode.heading, t);
                 else if (hType === "tangential") {
                     if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
@@ -101,12 +102,15 @@ export function generatePath(allNodes) {
                 // incomplete cubic - fall back to line toward last available point
                 let endPt = p3 || c2 || c1;
                 let steps = Math.max(1, Math.ceil(Math.hypot(endPt.x - p0.x, endPt.y - p0.y) / LINE_RESOLUTION));
+                
                 for (let s = 1; s <= steps; s++) {
                     let t = s / steps;
                     let x = p0.x + (endPt.x - p0.x) * t;
                     let y = p0.y + (endPt.y - p0.y) * t;
 
                     let heading = p0.heading;
+
+                    //handle heading modes
                     if (hType === "linear") heading = lerpAngle(p0.heading, endPt.heading, t);
                     else if (hType === "tangential") {
                         if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
@@ -127,7 +131,9 @@ export function generatePath(allNodes) {
                     let x = lut[s].x;
                     let y = lut[s].y;
 
-                    let heading = p0.heading; //constant
+                    let heading = p0.heading;
+                    
+                    //handle heading modes
                     if (hType === "linear") heading = lerpAngle(p0.heading, p3.heading, t);
                     else if (hType === "tangential") {
                         if (Math.hypot(y - prevY, x - prevX) > 0.001) heading = Math.atan2(y - prevY, x - prevX);
@@ -179,12 +185,12 @@ export function generatePath(allNodes) {
                     prevX = x; prevY = y; lastHeading = heading;
                 }
             }
-            // i already advanced by the while loop above
         }
     }
     return path;
 }
 
+//helper to set ctx colors based on mode
 function setCtxStyle(ctx, mode) {
     if (mode === "line" || mode === "point" || mode === "start") {
         ctx.strokeStyle = "#06b6d4";
@@ -200,11 +206,11 @@ function setCtxStyle(ctx, mode) {
     ctx.shadowBlur = 6;
 }
 
-
+//big boy function to draw everything
 export function draw(ctx, canvas, waypoints, pathArray, wpRad, curvePreview = null) {
     drawGrid(ctx, canvas);
 
-    //draw path line
+    //draw the path line
     if (pathArray.length > 0) {
         let currentMode = pathArray[0].mode || "line";
         ctx.beginPath();
@@ -321,7 +327,7 @@ export function drawRobot(ctx, pose, inchSize) {
     ctx.fill();
     ctx.stroke();
 
-    //dir indicator
+    //dir indicator, arrow
     ctx.fillStyle = "#10b981";
     ctx.shadowColor = "#10b981";
     ctx.shadowBlur = 10;

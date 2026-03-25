@@ -10,22 +10,25 @@ function getAngleDiff(p0, p1, p2) {
     let d2 = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     if (d1 < 0.001 || d2 < 0.001) return 0; //ignore overlapping pts
 
+    //calc angle between vectors
     let a1 = Math.atan2(p1.y - p0.y, p1.x - p0.x);
     let a2 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 
+    //normalize angle to [-180, 180] (or pi)
     let diff = a2 - a1;
     while (diff > Math.PI) diff -= 2 * Math.PI;
     while (diff < -Math.PI) diff += 2 * Math.PI;
     return Math.abs(diff);
 }
 
+//fuc to update robot pose along the path so that it moves smoothly
 export function updRobot(robot, pathArray) {
     if (!robot.isMoving || pathArray.length === 0) return;
 
     let index = Math.floor(robot.t);
     let target = pathArray[index];
 
-    // delay logic
+    // delay/wait logic
     if (target && target.type === 'delay') {
         if (!robot.delayStart) robot.delayStart = performance.now();
 
@@ -43,7 +46,8 @@ export function updRobot(robot, pathArray) {
     }
 
     let localT = robot.t - index;
-
+    
+    //calc how many pts we can safely move forward without hitting a sharp corner
     let toNext = 0;
     for (let i = index; i < pathArray.length - 1; i++) {
         if (i > index) {
@@ -62,6 +66,7 @@ export function updRobot(robot, pathArray) {
     }
     let distFromEnd = toNext - localT;
 
+    //loop that goes backwards to find how many pts we can safely move backward
     let sinceLast = 0;
     for (let i = index; i > 0; i--) {
         let p0 = pathArray[Math.max(0, i - 1)];

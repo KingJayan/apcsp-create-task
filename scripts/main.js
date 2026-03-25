@@ -29,7 +29,7 @@ let currMode = "line";
 
 let mouse = { x: 0, y: 0 };
 
-let isDirty = true; //canvas needs redraw
+let isDirty = true; //flag if canvas needs redraw
 
 //toolbar UI elements
 const startBtn = document.getElementById("btn-start");
@@ -106,10 +106,12 @@ function updateHistoryButtons() {
     if (redoBtn) redoBtn.disabled = redoStack.length === 0;
 }
 
+//calc path length and est time
 function updatePathStats() {
     let distIn = 0;
     let delayMs = 0;
-
+    
+    // calc eta by using the path array
     for (let i = 1; i < pathArray.length; i++) {
         let p0 = pathArray[i - 1];
         let p1 = pathArray[i];
@@ -125,6 +127,7 @@ function updatePathStats() {
     const delaySecs = delayMs / 1000;
     const totalSecs = driveSecs + delaySecs;
 
+    // display the stats that we just calcd
     if (pathLengthDisplay)
         pathLengthDisplay.innerText = `Path: ${distIn.toFixed(2)} in`;
     if (pathTimeDisplay)
@@ -139,16 +142,13 @@ editModeBtn.addEventListener("click", () => setWhichMode(true));
 if (undoBtn) undoBtn.addEventListener("click", undo);
 if (redoBtn) redoBtn.addEventListener("click", redo);
 
-//sidebar UI elements
-const startXInput = document.getElementById("start-x");
-const startYInput = document.getElementById("start-y");
-const startHInput = document.getElementById("start-h");
-const pathBlocksContainer = document.getElementById("path-blocks");
-const robotPosDisplay = document.getElementById("robot-pos-display");
-const pathLengthDisplay = document.getElementById("path-length");
-const pathTimeDisplay = document.getElementById("path-time");
-const pathDelayDisplay = document.getElementById("path-delay");
-const curveFeedback = document.getElementById("curve-feedback");
+/*
+sidebar UI elements
+use a query selector instead of doing individually like:
+const startXInput = document.getElementById("start-x"); etc.
+*/
+const [startXInput, startYInput, startHInput, pathBlocksContainer, robotPosDisplay, pathLengthDisplay, pathTimeDisplay, pathDelayDisplay, curveFeedback] = 
+document.querySelectorAll('#start-x, #start-y, #start-h, #path-blocks, #robot-pos-display, #path-length, #path-time, #path-delay, #curve-feedback');
 
 document.addEventListener("pointermove", (e) => {
     const surface = e.target.closest(
@@ -294,7 +294,7 @@ function attachSidebarListeners() {
     });
 }
 
-//upd the list of pts — updates in place if structure matches, full rebuild otherwise
+//upd the list of pts - updates in place if structure matches, full rebuild otherwise
 function renderSidebarBlocks() {
     const existingBlocks = [
         ...pathBlocksContainer.querySelectorAll(".path-block"),
@@ -314,7 +314,7 @@ function renderSidebarBlocks() {
         });
 
     if (structureMatches) {
-        //in-place update: just refresh values without touching the DOM structure
+        //in-place update: just refresh values without touching the DOM structure, works like hot reload (i think)
         waypoints.forEach((wp, index) => {
             const block = existingBlocks[index];
             if (wp.type === "delay") {
