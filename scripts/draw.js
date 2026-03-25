@@ -98,7 +98,7 @@ export function generatePath(allNodes) {
             let p3 = allNodes[i + 2];
 
             if (!c2 || !p3) {
-                // incomplete cubic — fall back to line toward last available point
+                // incomplete cubic - fall back to line toward last available point
                 let endPt = p3 || c2 || c1;
                 let steps = Math.max(1, Math.ceil(Math.hypot(endPt.x - p0.x, endPt.y - p0.y) / LINE_RESOLUTION));
                 for (let s = 1; s <= steps; s++) {
