@@ -19,5 +19,8 @@
   "homepage": "https://github.com/KingJayan/apcsp-create-task#readme",
   "devDependencies": {
     "less": "^4.6.4"
+  },
+  "dependencies": {
+    "klona": "^2.0.6"
   }
 }

@@ -3,6 +3,7 @@
 import { draw, generatePath, drawRobot, toInch, toPix } from './draw.js';
 import { updRobot } from './animate.js';
 import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from './config.js';
+import { klona } from 'klona';
 
 const canvas = document.getElementById("ctx");
 const ctx = canvas.getContext("2d");
@@ -73,7 +74,7 @@ function refreshIcons() {
 }
 
 function snapshot() {
-    undoStack.push(structuredClone(waypoints));
+    undoStack.push(klona(waypoints));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
     redoStack.length = 0;
     updateHistoryButtons();
@@ -81,7 +82,7 @@ function snapshot() {
 
 function undo() {
     if (undoStack.length === 0) return;
-    redoStack.push(structuredClone(waypoints));
+    redoStack.push(klona(waypoints));
     waypoints = undoStack.pop();
     updatePath();
     renderSidebarBlocks();
@@ -91,7 +92,7 @@ function undo() {
 
 function redo() {
     if (redoStack.length === 0) return;
-    undoStack.push(structuredClone(waypoints));
+    undoStack.push(klona(waypoints));
     waypoints = redoStack.pop();
     updatePath();
     renderSidebarBlocks();
@@ -641,7 +642,7 @@ canvas.addEventListener("mousedown", (e) => {
     //check start pose first
     let spPix = toPix(startPose.x, startPose.y);
     if (Math.hypot(clickX - spPix.x, clickY - spPix.y) < wpRad + 15) {
-        pendingSnapshot = structuredClone(waypoints); //tentative snapshot, committed on first actual move
+        pendingSnapshot = klona(waypoints); //tentative snapshot, committed on first actual move
         draggedIdx = -1;
         isDragging = true;
         return;
@@ -651,7 +652,7 @@ canvas.addEventListener("mousedown", (e) => {
     for (let i = 0; i < waypoints.length; i++) {
         let wpPix = toPix(waypoints[i].x, waypoints[i].y);
         if (Math.hypot(clickX - wpPix.x, clickY - wpPix.y) < wpRad + 15) {
-            pendingSnapshot = structuredClone(waypoints); //tentative snapshot, committed on first actual move
+            pendingSnapshot = klona(waypoints); //tentative snapshot, committed on first actual move
             draggedIdx = i;
             isDragging = true;
             return;
