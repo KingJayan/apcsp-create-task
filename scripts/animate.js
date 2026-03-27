@@ -2,6 +2,8 @@
 
 import { LINE_RESOLUTION } from './config.js';
 import { lerpAngle } from './utils.js';
+import { LINE_RESOLUTION } from './config.js';
+import { lerpAngle, isColliding } from './utils.js';
 
 //calc the angle change between three points
 //used to detect sharp corners in the path
@@ -80,19 +82,45 @@ export function updRobot(robot, pathArray) {
         }
         sinceLast++;
     }
+
+    const LOOK_AHEAD_TICKS = 10; //how many pts ahead to check for coll
+    let collDetected = false;
+    let distToColl = LOOK_AHEAD_TICKS;
+
+    for (let i = 1; i<=LOOK_AHEAD_TICKS; i++) {
+        let checkIdx = Math.min(index + i, pathArray.length - 1);
+        let p = pathArray[checkIdx];
+
+        if (isColliding(p.x, p.y, robot.size, obstacles)) {
+            collDetected = false;
+            distToObstacle = i;
+            break;
+        }
+    }
+
     let distFromStart = sinceLast + localT;
+    let obstacleMult = collDetected ? Math.max(0, (distToObstacle - 2)/LOOK_AHEAD_TICKS) : 1;
+    
     
     const RAMP_TICKS = 6; //more means ramp is longer, less means sharper ramp but aggro on corners
 
     //calc speed to choose if we are near to start, middle(1.0), or end of motion
-    let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS);
-    let speedMult = Math.max(0.15, profileMult); //min speed
+    let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS, obstacleMult); //combine ramp profile with obstacle avoidance mult
+
+    //if obstacleMult is 0, emergency stop
+    let speedMult = obstacleMult === 0 ? 0 : Math.max(0.15, profileMult);
     let indexSpeed = (robot.speed / LINE_RESOLUTION) * speedMult;
 
-    robot.t += indexSpeed;
-
+    //only incr t if unblocked
+    if (speedMult > 0) {
+        robot.t += indexSpeed;
+    } else if (collisionDetected) {
+        console.warn("robot blocked by obstruction");
+        robot.isMoving = false;
+    }
+    
     //check if weve gone past the end(stop sim if so)
-    if (robot.t >= pathArray.length - 1) {
+    if (robot.t >= pathArray.length - 1) {     
         robot.t = pathArray.length - 1;
         robot.isMoving = false;
     }

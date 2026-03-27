@@ -4,6 +4,7 @@
 export const FIELD_SIZE = 144; //6 tiles sq
 export const ROBOT_SIZE = 18;
 export const ROBOT_SPEED = 1.1;
+export const DEFAULT_OBS_SIZE = 6;
 
 //ui & rendering
 export const CANVAS_SIZE = 600; //px
