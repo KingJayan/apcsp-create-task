@@ -140,8 +140,15 @@ editModeBtn.addEventListener("click", () => setWhichMode(true));
 if (undoBtn) undoBtn.addEventListener("click", undo);
 if (redoBtn) redoBtn.addEventListener("click", redo);
 
-const [startXInput, startYInput, startHInput, pathBlocksContainer, robotPosDisplay, pathLengthDisplay, pathTimeDisplay, pathDelayDisplay, curveFeedback] = 
-document.querySelectorAll('#start-x, #start-y, #start-h, #path-blocks, #robot-pos-display, #path-length, #path-time, #path-delay, #curve-feedback');
+const startXInput        = document.getElementById('start-x');
+const startYInput        = document.getElementById('start-y');
+const startHInput        = document.getElementById('start-h');
+const pathBlocksContainer = document.getElementById('path-blocks');
+const robotPosDisplay    = document.getElementById('robot-pos-display');
+const pathLengthDisplay  = document.getElementById('path-length');
+const pathTimeDisplay    = document.getElementById('path-time');
+const pathDelayDisplay   = document.getElementById('path-delay');
+const curveFeedback      = document.getElementById('curve-feedback');
 
 document.addEventListener("pointermove", (e) => {
     const surface = e.target.closest(".group, .sidebar, .path-block, .input-group, .status, .mode-hint");
