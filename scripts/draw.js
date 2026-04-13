@@ -340,14 +340,3 @@ export function drawRobot(ctx, pose, inchSize) {
     ctx.restore();
 }
 
-export function drawObstacles(ctx, obstacles) {
-    ctx.fillStyle = "rgba(239, 68, 68, 0.5)";
-    //loop through all obs and draw them
-    for (const obs of obstacles) {
-        const pix = toPix(obs.x, obs.y);
-        const pixRad = obs.radius * SCALE;
-        ctx.beginPath();
-        ctx.arc(pix.x, pix.y, pixRad, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}

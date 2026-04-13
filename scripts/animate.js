@@ -2,8 +2,6 @@
 
 import { LINE_RESOLUTION } from './config.js';
 import { lerpAngle } from './utils.js';
-import { LINE_RESOLUTION } from './config.js';
-import { lerpAngle, isColliding } from './utils.js';
 
 //calc the angle change between three points
 //used to detect sharp corners in the path
@@ -12,7 +10,6 @@ function getAngleDiff(p0, p1, p2) {
     let d2 = Math.hypot(p2.x - p1.x, p2.y - p1.y);
     if (d1 < 0.001 || d2 < 0.001) return 0; //ignore overlapping pts
 
-    //calc angle between vectors
     let a1 = Math.atan2(p1.y - p0.y, p1.x - p0.x);
     let a2 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 
@@ -23,7 +20,6 @@ function getAngleDiff(p0, p1, p2) {
     return Math.abs(diff);
 }
 
-//fuc to update robot pose along the path so that it moves smoothly
 export function updRobot(robot, pathArray) {
     if (!robot.isMoving || pathArray.length === 0) return;
 
@@ -48,7 +44,7 @@ export function updRobot(robot, pathArray) {
     }
 
     let localT = robot.t - index;
-    
+
     //calc how many pts we can safely move forward without hitting a sharp corner
     let toNext = 0;
     for (let i = index; i < pathArray.length - 1; i++) {
@@ -68,7 +64,6 @@ export function updRobot(robot, pathArray) {
     }
     let distFromEnd = toNext - localT;
 
-    //loop that goes backwards to find how many pts we can safely move backward
     let sinceLast = 0;
     for (let i = index; i > 0; i--) {
         let p0 = pathArray[Math.max(0, i - 1)];
@@ -83,44 +78,19 @@ export function updRobot(robot, pathArray) {
         sinceLast++;
     }
 
-    const LOOK_AHEAD_TICKS = 10; //how many pts ahead to check for coll
-    let collDetected = false;
-    let distToColl = LOOK_AHEAD_TICKS;
-
-    for (let i = 1; i<=LOOK_AHEAD_TICKS; i++) {
-        let checkIdx = Math.min(index + i, pathArray.length - 1);
-        let p = pathArray[checkIdx];
-
-        if (isColliding(p.x, p.y, robot.size, obstacles)) {
-            collDetected = false;
-            distToObstacle = i;
-            break;
-        }
-    }
-
     let distFromStart = sinceLast + localT;
-    let obstacleMult = collDetected ? Math.max(0, (distToObstacle - 2)/LOOK_AHEAD_TICKS) : 1;
-    
-    
+
     const RAMP_TICKS = 6; //more means ramp is longer, less means sharper ramp but aggro on corners
 
     //calc speed to choose if we are near to start, middle(1.0), or end of motion
-    let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS, obstacleMult); //combine ramp profile with obstacle avoidance mult
-
-    //if obstacleMult is 0, emergency stop
-    let speedMult = obstacleMult === 0 ? 0 : Math.max(0.15, profileMult);
+    let profileMult = Math.min(1, distFromStart / RAMP_TICKS, distFromEnd / RAMP_TICKS);
+    let speedMult = Math.max(0.15, profileMult); //min speed
     let indexSpeed = (robot.speed / LINE_RESOLUTION) * speedMult;
 
-    //only incr t if unblocked
-    if (speedMult > 0) {
-        robot.t += indexSpeed;
-    } else if (collisionDetected) {
-        console.warn("robot blocked by obstruction");
-        robot.isMoving = false;
-    }
-    
+    robot.t += indexSpeed;
+
     //check if weve gone past the end(stop sim if so)
-    if (robot.t >= pathArray.length - 1) {     
+    if (robot.t >= pathArray.length - 1) {
         robot.t = pathArray.length - 1;
         robot.isMoving = false;
     }

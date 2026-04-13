@@ -14,12 +14,6 @@ const startPose = { x: -48, y: -48, heading: 90 };
 let waypoints = []; 
 let pathArray = []; 
 
-let obstructions = [];
-let isObsMode = false;
-let obsStart = null;
-let obsCurrent = null;
-let draggedObs = null;
-
 let wpRad = WP_RADIUS;
 
 const robot = {
@@ -47,36 +41,27 @@ const modeButtons = {
 
 const drawModeBtn = document.getElementById("btn-mode-draw");
 const editModeBtn = document.getElementById("btn-mode-edit");
-const obsModeBtn = document.getElementById("btn-mode-obs");
 const segmentGroup = document.getElementById("segment-group");
 
-let isEditMode = false; 
+let isEditMode = false;
 
-function setWhichMode(modeType) {
-    isEditMode = (modeType === 'edit');
-    isObsMode = (modeType === 'obs');
-
-    [drawModeBtn, editModeBtn, obsModeBtn].forEach(btn => btn?.classList.remove("active"));
-
-    if (isObsMode) {
-        obsModeBtn.classList.add("active");
-        canvas.style.cursor = "crosshair";
-        segmentGroup.style.display = "none";
-    } else if (isEditMode) {
+function setWhichMode(editMode) {
+    isEditMode = editMode;
+    if (editMode) {
         editModeBtn.classList.add("active");
+        drawModeBtn.classList.remove("active");
         canvas.style.cursor = "default";
         segmentGroup.style.display = "none";
     } else {
         drawModeBtn.classList.add("active");
+        editModeBtn.classList.remove("active");
         canvas.style.cursor = "crosshair";
         segmentGroup.style.display = "";
     }
 }
 
 let undoStack = [];
-let undoStack2 = []; 
 let redoStack = [];
-let redoStack2 = []; 
 
 const HISTORY_LIMIT = 200;
 
@@ -86,25 +71,19 @@ function refreshIcons() {
     }
 }
 
+//helper functions from lines 76 through 
+
 function snapshot() {
     undoStack.push(klona(waypoints));
-    undoStack2.push(klona(obstructions));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
-    if (undoStack2.length > HISTORY_LIMIT) undoStack2.shift();
     redoStack.length = 0;
-    redoStack2.length = 0;
     updateHistoryButtons();
 }
 
 function undo() {
-    if (undoStack.length === 0 || undoStack2.length === 0) return;
-
+    if (undoStack.length === 0) return;
     redoStack.push(klona(waypoints));
-    redoStack2.push(klona(obstructions));
-
-    obstructions = undoStack2.pop();
     waypoints = undoStack.pop();
-
     updatePath();
     renderSidebarBlocks();
     updateHistoryButtons();
@@ -112,14 +91,9 @@ function undo() {
 }
 
 function redo() {
-    if (redoStack.length === 0 || redoStack2.length === 0) return;
-
-    undoStack2.push(klona(obstructions));
+    if (redoStack.length === 0) return;
     undoStack.push(klona(waypoints));
-
-    obstructions = redoStack2.pop();
     waypoints = redoStack.pop();
-
     updatePath();
     renderSidebarBlocks();
     updateHistoryButtons();
@@ -127,8 +101,8 @@ function redo() {
 }
 
 function updateHistoryButtons() {
-    if (undoBtn) undoBtn.disabled = (undoStack.length === 0 && undoStack2.length === 0);
-    if (redoBtn) redoBtn.disabled = (redoStack.length === 0 && redoStack2.length === 0);
+    if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+    if (redoBtn) redoBtn.disabled = redoStack.length === 0;
 }
 
 function updatePathStats() {
@@ -155,9 +129,8 @@ function updatePathStats() {
     if (pathDelayDisplay) pathDelayDisplay.innerText = `Delay: ${delaySecs.toFixed(2)} s`;
 }
 
-drawModeBtn.addEventListener("click", () => setWhichMode('draw'));
-editModeBtn.addEventListener("click", () => setWhichMode('edit'));
-obsModeBtn?.addEventListener("click", () => setWhichMode('obs'));
+drawModeBtn.addEventListener("click", () => setWhichMode(false));
+editModeBtn.addEventListener("click", () => setWhichMode(true));
 
 if (undoBtn) undoBtn.addEventListener("click", undo);
 if (redoBtn) redoBtn.addEventListener("click", redo);
@@ -461,14 +434,8 @@ canvas.addEventListener("mousedown", (e) => {
     const pixY = (e.clientY - rect.top) * (canvas.height / rect.height);
     const inchPos = toInch(pixX, pixY);
 
-    if (isObsMode) {
-        obsStart = { ...inchPos };
-        obsCurrent = { ...inchPos };
-        return;
-    }
     if (isEditMode) {
         draggedIdx = null;
-        draggedObs = null;
 
         let spPix = toPix(startPose.x, startPose.y);
         if (Math.hypot(pixX - spPix.x, pixY - spPix.y) < wpRad + 15) {
@@ -487,18 +454,6 @@ canvas.addEventListener("mousedown", (e) => {
                 return;
             }
         }
-
-        for (let i = 0; i < obstructions.length; i++) {
-            const obs = obstructions[i];
-            const tl = toPix(obs.x, obs.y + obs.h);
-            const br = toPix(obs.x + obs.w, obs.y);
-            if (pixX >= tl.x && pixX <= br.x && pixY >= tl.y && pixY <= br.y) {
-                pendingSnapshot = klona(obstructions);
-                draggedObs = i;
-                isDragging = true;
-                return;
-            }
-        }
     }
 });
 
@@ -508,31 +463,17 @@ canvas.addEventListener("mousemove", (e) => {
     mouse.y = (e.clientY - rect.top) * (canvas.height / rect.height);
     isDirty = true;
 
-    if (isObsMode && obsStart) {
-        obsCurrent = toInch(mouse.x, mouse.y);
-    }
-
     if (isDragging && isEditMode) {
         if (pendingSnapshot) {
-            if (draggedObs !== null) {
-                undoStack2.push(pendingSnapshot);
-                undoStack.push(klona(waypoints));
-            } else {
-                undoStack.push(pendingSnapshot);
-                undoStack2.push(klona(obstructions));
-            }
+            undoStack.push(pendingSnapshot);
             redoStack.length = 0;
-            redoStack2.length = 0;
             updateHistoryButtons();
             pendingSnapshot = null;
         }
 
         const inchPos = toInch(mouse.x, mouse.y);
 
-        if (draggedObs !== null) {
-            obstructions[draggedObs].x = inchPos.x;
-            obstructions[draggedObs].y = inchPos.y;
-        } else if (e.shiftKey) {
+        if (e.shiftKey) {
             let target = draggedIdx === -1 ? startPose : waypoints[draggedIdx];
             let angle = Math.round(Math.atan2(inchPos.y - target.y, inchPos.x - target.x) * (180 / Math.PI));
             target.heading = angle;
@@ -560,23 +501,14 @@ canvas.addEventListener("mousemove", (e) => {
         }
         updatePath();
     } else if (currState !== "running") {
-        canvas.style.cursor = isObsMode ? "crosshair" : (isEditMode ? "default" : "crosshair");
+        canvas.style.cursor = isEditMode ? "default" : "crosshair";
     }
 });
 
 canvas.addEventListener("mouseup", () => {
     if (currState === "running") return;
 
-    if (isObsMode && obsStart && obsCurrent) {
-        const dx = Math.abs(obsCurrent.x - obsStart.x);
-        const dy = Math.abs(obsCurrent.y - obsStart.y);
-        if (dx > 1 && dy > 1) {
-            snapshot();
-            obstructions.push({ x: Math.min(obsStart.x, obsCurrent.x), y: Math.min(obsStart.y, obsCurrent.y), w: dx, h: dy });
-        }
-        obsStart = null;
-        obsCurrent = null;
-    } else if (!isEditMode && !isObsMode) {
+    if (!isEditMode) {
         snapshot();
         const pos = toInch(mouse.x, mouse.y);
         waypoints.push({ x: pos.x, y: pos.y, heading: waypoints.length ? waypoints[waypoints.length - 1].heading : startPose.heading, mode: currMode, headingInterp: "linear", type: "waypoint" });
@@ -587,13 +519,11 @@ canvas.addEventListener("mouseup", () => {
     pendingSnapshot = null;
     isDragging = false;
     draggedIdx = null;
-    draggedObs = null;
 });
 
 canvas.addEventListener("mouseleave", () => {
     pendingSnapshot = null;
     isDragging = false;
-    obsStart = null;
 });
 
 updatePath();
@@ -621,16 +551,7 @@ function renderNow() {
         }
     }
 
-    //pass obs data to draw module
-    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, curvePreview, { 
-        obstructions, 
-        previewRect: (isObsMode && obsStart && obsCurrent) ? {
-            x: Math.min(obsStart.x, obsCurrent.x),
-            y: Math.min(obsStart.y, obsCurrent.y),
-            w: Math.abs(obsCurrent.x - obsStart.x),
-            h: Math.abs(obsCurrent.y - obsStart.y)
-        } : null 
-    });
+    draw(ctx, canvas, [startPose, ...waypoints], pathArray, wpRad, curvePreview);
     drawRobot(ctx, robot.pose, robot.size);
 }
 
