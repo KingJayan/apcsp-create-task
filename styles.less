@@ -22,20 +22,6 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), @shadow;
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(220px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.08), transparent 65%);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  &:hover::before {
-    opacity: 1;
-  }
 }
 
 body {
@@ -102,10 +88,6 @@ canvas {
     padding: 4px;
     border-radius: 8px;
     white-space: nowrap;
-
-    &::before {
-      background: radial-gradient(100px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.12), transparent 70%);
-    }
   }
 }
 
