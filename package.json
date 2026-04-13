@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "lessc styles.less styles.css"
+    "build": "lessc styles.less styles.css",
+    "dev": "npx serve"
+    "dev:all": "lessc styles.less styles.css && npx serve"
   },
   "author": "Jayan P",
   "license": "ISC",

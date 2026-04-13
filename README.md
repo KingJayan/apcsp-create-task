@@ -47,7 +47,7 @@ made using the npm package manager, lessjs, and 4 deps
 
 ## technical stack
 
-* **htm
+* **html, js**: static web app
 * **sortablejs**: enables drag-and-drop reordering for waypoint blocks
 * **lucide**: provides clean, consistent iconography for the toolbar and sidebar
 * **klona**: handles deep-cloning of state for robust undo/redo history
@@ -79,22 +79,21 @@ git clone https://github.com/KingJayan/apcsp-create-task
 cd apcsp-create-task
 
 # install dependencies
-npm i 
+npm i
 
 # build styles (if modifying .less)
-npm run build:css
+npm run build
 
 # start a local server
 python -m http.server
 # OR
-npx serve
+npm run dev #equivalent to npx serve
 ```
 deployable on just about anything. dev was on replit & vscode
 
 ## license
 
-none; do whatever u want
-<!-- distributed under the mit license. see `license` for more information. -->
+distributed under the isc license.
 
 
 ## contact
