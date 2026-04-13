@@ -47,6 +47,7 @@ made using the npm package manager, lessjs, and 4 deps
 
 ## technical stack
 
+* **htm
 * **sortablejs**: enables drag-and-drop reordering for waypoint blocks
 * **lucide**: provides clean, consistent iconography for the toolbar and sidebar
 * **klona**: handles deep-cloning of state for robust undo/redo history
