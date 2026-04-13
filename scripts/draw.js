@@ -123,6 +123,7 @@ export function generatePath(allNodes) {
                 i += p3 ? 3 : (c2 ? 2 : 1);
             } else {
                 // cubic bezier: p0 (anchor), c1, c2, p3 (end)
+                //Bezier() functionality presented by an external library
                 const curve = new Bezier(p0.x, p0.y, c1.x, c1.y, c2.x, c2.y, p3.x, p3.y);
                 const lut = curve.getLUT(CURVE_STEPS);
                 //arc-len parameterized pts
@@ -156,6 +157,7 @@ export function generatePath(allNodes) {
 
             if (splineWps.length >= 2) {
                 const points = splineWps.map(n => [n.x, n.y]);
+                //CurveInterpolator() functionality presented by an external library
                 const ci = new CurveInterpolator(points, { tension: 0 });
                 const totalSteps = (splineWps.length - 1) * SPLINE_STEPS;
                 const lut = ci.getPoints(totalSteps); // returns totalSteps+1 pts

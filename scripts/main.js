@@ -1,5 +1,7 @@
 //main.js
 
+// used npm package manager to install bezier-js, curve-interpolator, klona, and sortablejs
+
 import { draw, generatePath, drawRobot, toInch, toPix } from "./draw.js";
 import { updRobot } from "./animate.js";
 import { ROBOT_SPEED, ROBOT_SIZE, WP_RADIUS } from "./config.js";
@@ -74,6 +76,7 @@ function refreshIcons() {
 //helper functions from lines 76 through 130 were generated using replit AI agent; asked it to fill in the gaps of what I had started
 
 function snapshot() {
+    //klona functionality presented by an external library
     undoStack.push(klona(waypoints));
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
     redoStack.length = 0;
@@ -82,6 +85,7 @@ function snapshot() {
 
 function undo() {
     if (undoStack.length === 0) return;
+    //klona functionality presented by an external library
     redoStack.push(klona(waypoints));
     waypoints = undoStack.pop();
     updatePath();
@@ -92,6 +96,7 @@ function undo() {
 
 function redo() {
     if (redoStack.length === 0) return;
+    //klona functionality presented by an external library
     undoStack.push(klona(waypoints));
     waypoints = redoStack.pop();
     updatePath();
@@ -289,6 +294,7 @@ function renderSidebarBlocks() {
     refreshIcons();
 }
 
+//sortable functionality presented by an external library
 Sortable.create(pathBlocksContainer, {
     animation: 150,
     chosenClass: "dragging",
@@ -440,6 +446,7 @@ canvas.addEventListener("mousedown", (e) => {
 
         let spPix = toPix(startPose.x, startPose.y);
         if (Math.hypot(pixX - spPix.x, pixY - spPix.y) < wpRad + 15) {
+            //klona functionality presented by an external library
             pendingSnapshot = klona(waypoints);
             draggedIdx = -1;
             isDragging = true;
@@ -449,6 +456,7 @@ canvas.addEventListener("mousedown", (e) => {
         for (let i = 0; i < waypoints.length; i++) {
             let wpPix = toPix(waypoints[i].x, waypoints[i].y);
             if (Math.hypot(pixX - wpPix.x, pixY - wpPix.y) < wpRad + 15) {
+                //klona functionality presented by an external library
                 pendingSnapshot = klona(waypoints);
                 draggedIdx = i;
                 isDragging = true;
