@@ -6,46 +6,7 @@ a **robot pathing simulator** that semi-mirrors PedroPathing Visualizer's functi
 
 made using the npm package manager, lessjs, and 4 deps
 
-
-## architecture
-
-```
-@/
- ├── scripts/
- │    ├── animate.js  # updates robot position and calculates movement
- │    ├── config.js   # global configuration and canvas context settings
- │    ├── draw.js     # grid rendering, path calculation, and waypoint logic
- │    ├── main.js     # state management, ui glue, and event handling
- │    └── utils.js    # reusable helper functions for smooth math/physics
- ├── index.html       # entry point
- ├── styles.less      # source styles (glassmorphism logic)
- ├── styles.css       # compiled production styles
- └── package.json     # dependency manifest
-```
-### animate.js
-- updates robot position on the screen
-- calculates movement physics
-
-### config.js
-- houses a small set of configuration values relating to the appearance of the ctx
-
-### draw.js
-- logic for mode switching (draw vs. editing)
-- draws the coordinate grid and field elements
-- calculates the actual path the robot will follow
-- logic for drawing and manipulating waypoints
-
-### main.js
-- glue of the project; coordinates interactions between scripts
-- handles state management and sidebar syncing
-- uses sortablejs for drag-and-drop point reordering
-- handles undo/redo history (klona) and keyboard shortcuts
-
-### utils.js
-- contains reusable math helpers for smooth movement and vector logic
-
-
-## technical stack
+## stack
 
 * **html, js**: static web app
 * **sortablejs**: enables drag-and-drop reordering for waypoint blocks
@@ -62,17 +23,7 @@ made using the npm package manager, lessjs, and 4 deps
 * **keyboard shortcuts**: optimized for efficiency (undo, redo, mode switching)
 * **responsive layout**: adaptive glass ui that works across different screen sizes
 
-
-## keyboard shortcuts
-
-| key | action |
-| :--- | :--- |
-| `ctrl + z` | undo last action |
-| `ctrl + y` | redo last action |
-| `e` | switch to edit mode |
-| `space` | toggle simulation start/stop |
-
-## clone, build run
+## run it yourself
 ```bash
 # clone the repo
 git clone https://github.com/KingJayan/apcsp-create-task
@@ -86,7 +37,7 @@ npm run build
 
 # start a local server
 python -m http.server
-# OR
+# or
 npm run dev #equivalent to npx serve
 ```
 deployable on just about anything. dev was on replit & vscode
@@ -94,7 +45,6 @@ deployable on just about anything. dev was on replit & vscode
 ## license
 
 distributed under the isc license.
-
 
 ## contact
 
