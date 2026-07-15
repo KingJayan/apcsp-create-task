@@ -2,6 +2,9 @@
   <h2><code>KingJayan/apcsp-create-task</code></h2>
 </div>
 
+>[!NOTE]
+>no functionality of the code was modified after the due date of the ap csp create task
+
 a **robot pathing simulator** that semi-mirrors PedroPathing Visualizer's functionality
 
 made using the npm package manager, lessjs, and 4 deps
