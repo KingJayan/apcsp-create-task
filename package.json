@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "lessc styles.less styles.css",
-    "dev": "npx serve"
+    "dev": "npx serve",
     "dev:all": "lessc styles.less styles.css && npx serve"
   },
   "author": "Jayan P",
